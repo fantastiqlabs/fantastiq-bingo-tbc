@@ -1,0 +1,13 @@
+## Raid Bingo Addon
+## World of Warcraft: The Burning Crusade
+
+## Title: Raid Bingo Addon
+## Version: 1.0.0
+## Author: HelloThereGuild
+## Interface: 11201
+## SavedVariables: RaidBingoDB
+
+raid_bingo_addon.lua
+raid_bingo_card.lua
+raid_bingo_ui.lua
+raid_bingo_utils.lua
