@@ -240,7 +240,88 @@ function addon:SavePlayerMarks()
     -- The marks are updated directly in the table and will be saved automatically by WoW's system
 end
 
--- Get card data (from raid_bingo_card.lua)
+-- Get card data (from the addon's cardData)
 function addon:GetCardData()
-    return bingoCard or {}
+    -- This will be set by the main addon when a card is generated
+    if not cardData then
+        -- Return default card if no cardData is available yet
+        return self:GetDefaultCard()
+    end
+    return cardData or {}
+end
+
+-- Update the card display with current data
+function addon:UpdateCard()
+    if not self.mainFrame then return end
+    
+    local cardData = self:GetCardData()
+    
+    -- Update all buttons in the grid
+    for i = 1, 25 do
+        local button = self.gridButtons[i]
+        if button then
+            -- Get player marks from addon
+            local playerMarks = self:GetPlayerMarks()
+            local isMarked = playerMarks[i] or false
+            
+            -- Update button appearance based on mark state
+            if isMarked then
+                button:SetBackdropColor(0, 1, 0, 0.3) -- Green background for marked squares
+                button.text:SetTextColor(0, 0, 0, 1)   -- Black text for marked squares
+            else
+                button:SetBackdropColor(0, 0, 0, 0.5) -- Dark background for unmarked squares
+                button.text:SetTextColor(1, 1, 1, 1)   -- White text for unmarked squares
+            end
+            
+            -- Update the text on the button
+            if cardData and cardData.squares then
+                local squareText = cardData.squares[i]
+                if not squareText then
+                    squareText = ""
+                end
+                
+                -- Special handling for center square
+                if i == 13 then  -- Center square index (1-based)
+                    button.text:SetText(squareText)
+                else
+                    button.text:SetText(squareText)
+                end
+            end
+        end
+    end
+end
+
+-- Function to get the default card for fallback
+function addon:GetDefaultCard()
+    return {
+        squares = {
+            "Defeat a boss in the raid",
+            "Get a specific achievement during raid",
+            "Complete a specific encounter without wipes",
+            "Kill a certain number of mobs",
+            "Use a specific ability or spell",
+            "Reach a certain amount of damage/healing",
+            "Complete a specific mechanic",
+            "Obtain a rare item drop",
+            "Achieve a specific stat threshold",
+            "Defeat the first boss in the raid",
+            "Get 50% health on a boss",
+            "Free Space", -- Center square
+            "Kill 10+ mobs in one encounter",
+            "Complete all adds in an encounter",
+            "Use a class ability during raid",
+            "Deal 100k damage to a single target",
+            "Heal for 50k total in raid",
+            "Get a specific debuff on boss",
+            "Achieve full raid completion",
+            "Defeat the final boss without wipes",
+            "Complete all objectives in encounter",
+            "Kill a named mob",
+            "Use a consumable during raid",
+            "Get a critical hit during raid",
+            "Reach 100% health on a boss"
+        },
+        gridSize = 5,
+        centerSquareIndex = 13
+    }
 end

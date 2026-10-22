@@ -10,6 +10,9 @@ local cardData = nil;
 -- Player's marking state
 local playerMarks = {};
 
+-- Current deck selection (will be set based on raid type)
+local currentDeck = "default";
+
 -- Initialize the addon
 function addon:OnEnable()
     -- Load saved variables if they exist
@@ -34,16 +37,113 @@ function addon:OnEnable()
     print("|cFF00FF00Raid Bingo Addon loaded!|r");
 end
 
--- Load card data from the card module
-function addon:LoadCardData()
-    -- This will be called after the card file is loaded
-    if not raid_bingo_card then
-        print("Error: Card data not found!");
-        return false;
+-- Generate a random bingo card from the catalog
+function addon:GenerateCardFromCatalog(deckName)
+    -- Check if RaidBingoCatalog is available
+    if not RaidBingoCatalog then
+        print("Warning: RaidBingoCatalog not available, using default card")
+        return self:GetDefaultCard()
     end
+    
+    -- Get the deck from the catalog (raid name -> array of squares)
+    local deck = RaidBingoCatalog[deckName]
+    if not deck then
+        -- Fallback to default deck - use a generic raid or just return default
+        print("Warning: Deck '" .. deckName .. "' not found, using default card")
+        return self:GetDefaultCard()
+    end
+    
+    -- Ensure the deck is actually an array
+    if type(deck) ~= "table" then
+        print("Warning: Deck '" .. deckName .. "' is not a valid table, using default card")
+        return self:GetDefaultCard()
+    end
+    
+    -- Create a new card with 25 squares (5x5)
+    local newCard = {
+        squares = {},
+        gridSize = 5,
+        centerSquareIndex = 13
+    }
+    
+    -- Get random squares from the deck
+    local availableSquares = {}
+    
+    -- Copy all squares from the deck (the deck is already an array of squares)
+    for i, square in ipairs(deck) do
+        table.insert(availableSquares, square)
+    end
+    
+    -- Shuffle the squares
+    self:ShuffleTable(availableSquares)
+    
+    -- Take first 24 squares (excluding center)
+    local selectedSquares = {}
+    for i = 1, math.min(24, #availableSquares) do
+        table.insert(selectedSquares, availableSquares[i])
+    end
+    
+    -- Fill the card with squares (center is "Free Space")
+    for i = 1, 25 do
+        if i == 13 then
+            newCard.squares[i] = "Free Space"
+        else
+            if #selectedSquares > 0 then
+                newCard.squares[i] = table.remove(selectedSquares)
+            else
+                -- Fallback to default text if we run out of squares
+                newCard.squares[i] = { id = "fallback", text = "Random Bingo Square", category = "fallback" }
+            end
+        end
+    end
+    
+    return newCard
+end
 
-    cardData = raid_bingo_card.GetCardData();
-    return true;
+-- Get a default card for fallback
+function addon:GetDefaultCard()
+    return {
+        squares = {
+            "Defeat a boss in the raid",
+            "Get a specific achievement during raid",
+            "Complete a specific encounter without wipes",
+            "Kill a certain number of mobs",
+            "Use a specific ability or spell",
+            "Reach a certain amount of damage/healing",
+            "Complete a specific mechanic",
+            "Obtain a rare item drop",
+            "Achieve a specific stat threshold",
+            "Defeat the first boss in the raid",
+            "Get 50% health on a boss",
+            "Free Space", -- Center square
+            "Kill 10+ mobs in one encounter",
+            "Complete all adds in an encounter",
+            "Use a class ability during raid",
+            "Deal 100k damage to a single target",
+            "Heal for 50k total in raid",
+            "Get a specific debuff on boss",
+            "Achieve full raid completion",
+            "Defeat the final boss without wipes",
+            "Complete all objectives in encounter",
+            "Kill a named mob",
+            "Use a consumable during raid",
+            "Get a critical hit during raid",
+            "Reach 100% health on a boss"
+        },
+        gridSize = 5,
+        centerSquareIndex = 13
+    }
+end
+
+-- Shuffle a table (Fisher-Yates shuffle)
+function addon:ShuffleTable(t)
+    local n = #t
+    
+    while n > 1 do
+        local k = math.random(n)
+        t[n], t[k] = t[k], t[n]
+        n = n - 1
+    end
 end
 
 -- Handle addon loading event
@@ -90,6 +190,21 @@ function addon:CreateUI()
 
     -- Store reference to the main frame for later use
     self.mainFrame = frame;
+    
+    -- Generate a card based on current deck
+    self:GenerateAndDisplayCard();
+end
+
+-- Generate and display a card
+function addon:GenerateAndDisplayCard()
+    -- Generate card from catalog
+    local generatedCard = self:GenerateCardFromCatalog(currentDeck)
+    cardData = generatedCard
+    
+    -- Update UI with the new card data
+    if self.mainFrame then
+        self:UpdateUI()
+    end
 end
 
 -- Toggle UI visibility
@@ -102,6 +217,8 @@ function addon:ToggleUI()
         self.mainFrame:Hide();
     else
         self.mainFrame:Show();
+        -- Update the card when showing
+        self:UpdateUI();
     end
 end
 
@@ -126,7 +243,7 @@ function addon:IsSquareMarked(squareIndex)
     return playerMarks[squareIndex] or false;
 end
 
--- Check for completed lines (horizontal, vertical, diagonal)
+-- Check for completed lines (horizontal, vertical only - no diagonals for MVP)
 function addon:CheckLines()
     local lines = {};
 
@@ -160,38 +277,22 @@ function addon:CheckLines()
         end
     end
 
-    -- Diagonal lines (2 diagonals)
-    local diag1Complete = true;  -- Top-left to bottom-right
-    for i = 0, 4 do
-        local index = i * 5 + i + 1;
-        if not playerMarks[index] then
-            diag1Complete = false;
-            break;
-        end
-    end
-    if diag1Complete then
-        table.insert(lines, "diag_1");
-    end
-
-    local diag2Complete = true;  -- Top-right to bottom-left
-    for i = 0, 4 do
-        local index = i * 5 + (4 - i) + 1;
-        if not playerMarks[index] then
-            diag2Complete = false;
-            break;
-        end
-    end
-    if diag2Complete then
-        table.insert(lines, "diag_2");
-    end
-
+    -- Diagonal lines are NOT implemented for MVP as per requirements
+    
     return lines;
 end
 
 -- Update the UI to show current marks and completed lines
 function addon:UpdateUI()
-    -- This will be implemented in raid_bingo_ui.lua
-    print("Updating UI...");
+    -- This function is now handled by the UI component which has direct access to cardData
+    if self.mainFrame then
+        -- The UI component handles updating itself with the current card data
+        print("Updating UI with card data...");
+        -- Trigger UI update in the UI component - let the UI handle its own updates
+        if self.mainFrame and self.mainFrame.UpdateCard then
+            self.mainFrame:UpdateCard()
+        end
+    end
 end
 
 -- Command handler for slash commands
@@ -203,10 +304,34 @@ function addon:HandleCommand(msg)
         RaidBingoDB.playerMarks = playerMarks;
         self:UpdateUI();
         print("Raid Bingo marks reset.");
+    elseif msg == "bt" then
+        -- Switch to Black Temple deck
+        currentDeck = "black_temple"
+        self:GenerateAndDisplayCard()
+        print("Switched to Black Temple bingo card.")
+    elseif msg == "hyjal" then
+        -- Switch to Mount Hyjal deck
+        currentDeck = "mount_hyjal"
+        self:GenerateAndDisplayCard()
+        print("Switched to Mount Hyjal bingo card.")
+    elseif msg == "ssc" then
+        -- Switch to SSC deck
+        currentDeck = "ssc"
+        self:GenerateAndDisplayCard()
+        print("Switched to SSC bingo card.")
+    elseif msg == "tk" then
+        -- Switch to Tempest Keep/Kael'thas deck
+        currentDeck = "tempest_keep"
+        self:GenerateAndDisplayCard()
+        print("Switched to Tempest Keep/Kael'thas bingo card.")
     else
         print("Available commands:");
         print("/rb toggle - Toggle the bingo card UI");
         print("/rb reset - Reset all your marks");
+        print("/rb bt - Switch to Black Temple deck");
+        print("/rb hyjal - Switch to Mount Hyjal deck");
+        print("/rb ssc - Switch to SSC deck");
+        print("/rb tk - Switch to Tempest Keep/Kael'thas deck");
     end
 end
 
@@ -244,3 +369,6 @@ frame:SetScript("OnEvent", function(self, event, arg1)
         OnAddonLoad();
     end
 end);
+
+-- Export the addon for use by other modules
+RaidBingoAddon = addon;

@@ -11,3 +11,4 @@ raid_bingo_addon.lua
 raid_bingo_card.lua
 raid_bingo_ui.lua
 raid_bingo_utils.lua
+raid_bingo_catalog.lua
