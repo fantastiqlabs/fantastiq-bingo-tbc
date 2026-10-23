@@ -4,6 +4,7 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 
 ## Install and load
 
+- [ ] The main window title reads **Hello There Raid Bingo!**.
 - [ ] Extract `raid_bingo_addon` directly under the client's `Interface/AddOns` folder.
 - [ ] Enable Raid Bingo from the AddOns list.
 - [ ] Load into the world without Lua errors.

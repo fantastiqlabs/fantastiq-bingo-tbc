@@ -196,7 +196,7 @@ function addon:CreateUI()
     -- Title text
     local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge");
     title:SetPoint("TOP", 0, -10);
-    title:SetText("Raid Bingo Card");
+    title:SetText("Hello There Raid Bingo!");
 
     -- Close button
     local closeButton = CreateFrame("Button", nil, frame, "UIPanelCloseButton");

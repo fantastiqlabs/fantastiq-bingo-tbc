@@ -103,7 +103,7 @@ function addon:CreateUI()
     -- Add a title
     local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     title:SetPoint("TOP", 0, -10)
-    title:SetText("Raid Bingo Card")
+    title:SetText("Hello There Raid Bingo!")
 
     local scaleButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     scaleButton:SetSize(58, 22)
