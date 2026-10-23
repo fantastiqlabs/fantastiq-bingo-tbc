@@ -1,12 +1,12 @@
 # Raid-generic bingo deck status
 
-A raid-generic pool is planned so cards can be used in different TBC raids without boss or raid names. Candidate squares include general encounter moments, class or role activities, consumable use, and broadly recognizable raid events.
+## Current candidate implementation
 
-This document is a design note, not evidence that the deck is implemented. Review `raid_bingo_catalog.lua` and deck selection in the addon before describing it as playable. Avoid measurable combat thresholds unless the game exposes a reliable way for players to observe them; marks remain self-reported.
+The Lua catalog now includes a selectable `raid_generic` pool with 30 unique, raid-neutral squares. The in-game dropdown and `/rb generic` command select it. The pool's displayed text avoids raid names, boss names, and encounter-specific mechanics. Cards from this pool use only generic entries plus the free center.
+
+All marks remain manual and self-reported. No combat-log or encounter detection is claimed. The full historical catalog count has not been audited.
 
 ## Follow-up
 
-- Add a distinct generic pool with no raid-specific references.
-- Ensure its selector appears in the UI and card generation uses only that pool when selected.
-- Check for duplicates and make sure each pool has enough unique squares to fill a card.
-- Validate the deck in the in-game smoke test.
+- Check the generic deck in the Anniversary client and confirm each displayed square is raid-neutral.
+- Continue expanding the catalog with distinct, useful entries after this first test release.

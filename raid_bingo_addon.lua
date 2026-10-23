@@ -11,92 +11,67 @@ local cardData = nil;
 local playerMarks = {};
 
 -- Current deck selection (will be set based on raid type)
-local currentDeck = "default";
+local currentDeck = "raid_generic";
 
--- Initialize the addon
+-- Initialize saved state and create the interface once the addon files are loaded.
 function addon:OnEnable()
-    -- Load saved variables if they exist
-    if not RaidBingoDB then
-        RaidBingoDB = {};
+    RaidBingoDB = RaidBingoDB or {}
+    RaidBingoDB.playerMarks = RaidBingoDB.playerMarks or {}
+    playerMarks = RaidBingoDB.playerMarks
+
+    if RaidBingoCatalog and RaidBingoCatalog[RaidBingoDB.selectedDeck] then
+        currentDeck = RaidBingoDB.selectedDeck
     end
 
-    if not RaidBingoDB.playerMarks then
-        RaidBingoDB.playerMarks = {};
-    end
-
-    playerMarks = RaidBingoDB.playerMarks;
-
-    -- Create the UI when the addon loads
-    self:CreateUI();
-
-    -- Register events
-    self:RegisterEvent("PLAYER_ENTERING_WORLD");
-    self:RegisterEvent("ADDON_LOADED");
-
-    -- Print a welcome message
-    print("|cFF00FF00Raid Bingo Addon loaded!|r");
+    self:CreateUI()
+    print("|cFF00FF00Raid Bingo Addon loaded. Marks are self-reported and private.|r")
 end
 
--- Generate a random bingo card from the catalog
+-- Generate a complete card without duplicate squares. Short raid pools are topped up
+-- from the raid-generic pool; the generic deck itself never includes raid-specific text.
 function addon:GenerateCardFromCatalog(deckName)
-    -- Check if RaidBingoCatalog is available
-    if not RaidBingoCatalog then
-        print("Warning: RaidBingoCatalog not available, using default card")
-        return self:GetDefaultCard()
-    end
-    
-    -- Get the deck from the catalog (raid name -> array of squares)
-    local deck = RaidBingoCatalog[deckName]
-    if not deck then
-        -- Fallback to default deck - use a generic raid or just return default
-        print("Warning: Deck '" .. deckName .. "' not found, using default card")
-        return self:GetDefaultCard()
-    end
-    
-    -- Ensure the deck is actually an array
+    local deck = RaidBingoCatalog and RaidBingoCatalog[deckName]
     if type(deck) ~= "table" then
-        print("Warning: Deck '" .. deckName .. "' is not a valid table, using default card")
+        print("Unknown deck; using the raid-generic pool.")
+        deckName = "raid_generic"
+        deck = RaidBingoCatalog and RaidBingoCatalog[deckName]
+    end
+    if type(deck) ~= "table" then
         return self:GetDefaultCard()
     end
-    
-    -- Create a new card with 25 squares (5x5)
-    local newCard = {
-        squares = {},
-        gridSize = 5,
-        centerSquareIndex = 13
-    }
-    
-    -- Get random squares from the deck
-    local availableSquares = {}
-    
-    -- Copy all squares from the deck (the deck is already an array of squares)
-    for i, square in ipairs(deck) do
-        table.insert(availableSquares, square)
+
+    local pool = {}
+    local seenIds, seenText = {}, {}
+    local function addSquares(source)
+        for _, square in ipairs(source or {}) do
+            local textKey = square and square.text and string.lower(square.text)
+            if square and square.id and textKey and not seenIds[square.id] and not seenText[textKey] then
+                seenIds[square.id] = true
+                seenText[textKey] = true
+                table.insert(pool, square)
+            end
+        end
     end
-    
-    -- Shuffle the squares
-    self:ShuffleTable(availableSquares)
-    
-    -- Take first 24 squares (excluding center)
-    local selectedSquares = {}
-    for i = 1, math.min(24, #availableSquares) do
-        table.insert(selectedSquares, availableSquares[i])
+    addSquares(deck)
+    if #pool < 24 and deckName ~= "raid_generic" then
+        addSquares(RaidBingoCatalog.raid_generic)
     end
-    
-    -- Fill the card with squares (center is "Free Space")
+    if #pool < 24 then
+        print("This deck does not contain enough unique squares to make a full card.")
+        return self:GetDefaultCard()
+    end
+
+    self:ShuffleTable(pool)
+    local newCard = { squares = {}, gridSize = 5, centerSquareIndex = 13 }
+    local nextSquare = 1
     for i = 1, 25 do
         if i == 13 then
             newCard.squares[i] = "Free Space"
         else
-            if #selectedSquares > 0 then
-                newCard.squares[i] = table.remove(selectedSquares)
-            else
-                -- Fallback to default text if we run out of squares
-                newCard.squares[i] = { id = "fallback", text = "Random Bingo Square", category = "fallback" }
-            end
+            newCard.squares[i] = pool[nextSquare]
+            nextSquare = nextSquare + 1
         end
     end
-    
     return newCard
 end
 
@@ -195,16 +170,49 @@ function addon:CreateUI()
     self:GenerateAndDisplayCard();
 end
 
--- Generate and display a card
-function addon:GenerateAndDisplayCard()
-    -- Generate card from catalog
-    local generatedCard = self:GenerateCardFromCatalog(currentDeck)
-    cardData = generatedCard
-    
-    -- Update UI with the new card data
-    if self.mainFrame then
-        self:UpdateUI()
+-- Keep the randomized board stable across reloads so saved marks still refer to the same squares.
+function addon:GenerateAndDisplayCard(forceNew)
+    RaidBingoDB = RaidBingoDB or {}
+    local saved = RaidBingoDB.cardSquares
+    if not forceNew and RaidBingoDB.selectedDeck == currentDeck and type(saved) == "table" and #saved == 25 then
+        cardData = { squares = saved, gridSize = 5, centerSquareIndex = 13 }
+    else
+        cardData = self:GenerateCardFromCatalog(currentDeck)
+        RaidBingoDB.cardSquares = cardData.squares
+        RaidBingoDB.selectedDeck = currentDeck
+        RaidBingoDB.playerMarks = {}
+        RaidBingoDB.bingoAnnounced = false
+        playerMarks = RaidBingoDB.playerMarks
     end
+    self.currentCard = cardData
+    self.bingoAnnounced = RaidBingoDB.bingoAnnounced or false
+    if self.mainFrame then self:UpdateCard() end
+end
+
+function addon:GetCurrentDeck()
+    return currentDeck
+end
+
+function addon:SelectDeck(deckName)
+    if not RaidBingoCatalog or not RaidBingoCatalog[deckName] then return false end
+    currentDeck = deckName
+    RaidBingoDB.selectedDeck = deckName
+    RaidBingoDB.playerMarks = {}
+    RaidBingoDB.cardSquares = nil
+    RaidBingoDB.bingoAnnounced = false
+    playerMarks = RaidBingoDB.playerMarks
+    self.bingoAnnounced = false
+    self:GenerateAndDisplayCard(true)
+    return true
+end
+
+function addon:NewCard()
+    RaidBingoDB.playerMarks = {}
+    RaidBingoDB.cardSquares = nil
+    RaidBingoDB.bingoAnnounced = false
+    playerMarks = RaidBingoDB.playerMarks
+    self.bingoAnnounced = false
+    self:GenerateAndDisplayCard(true)
 end
 
 -- Toggle UI visibility
@@ -282,56 +290,34 @@ function addon:CheckLines()
     return lines;
 end
 
--- Update the UI to show current marks and completed lines
+-- Refresh all 25 cells through the UI module.
 function addon:UpdateUI()
-    -- This function is now handled by the UI component which has direct access to cardData
-    if self.mainFrame then
-        -- The UI component handles updating itself with the current card data
-        print("Updating UI with card data...");
-        -- Trigger UI update in the UI component - let the UI handle its own updates
-        if self.mainFrame and self.mainFrame.UpdateCard then
-            self.mainFrame:UpdateCard()
-        end
-    end
+    if self.UpdateCard then self:UpdateCard() end
 end
 
--- Command handler for slash commands
+-- Slash commands remain available alongside the visible deck dropdown.
 function addon:HandleCommand(msg)
-    if msg == "toggle" then
-        self:ToggleUI();
+    msg = string.lower((msg or ""):match("^%s*(.-)%s*$"))
+    local decks = {
+        bt = "black_temple", hyjal = "mount_hyjal", ssc = "ssc",
+        tk = "tempest_keep", za = "zul_aman", generic = "raid_generic"
+    }
+    if msg == "" or msg == "toggle" then
+        self:ToggleUI()
     elseif msg == "reset" then
-        playerMarks = {};
-        RaidBingoDB.playerMarks = playerMarks;
-        self:UpdateUI();
-        print("Raid Bingo marks reset.");
-    elseif msg == "bt" then
-        -- Switch to Black Temple deck
-        currentDeck = "black_temple"
-        self:GenerateAndDisplayCard()
-        print("Switched to Black Temple bingo card.")
-    elseif msg == "hyjal" then
-        -- Switch to Mount Hyjal deck
-        currentDeck = "mount_hyjal"
-        self:GenerateAndDisplayCard()
-        print("Switched to Mount Hyjal bingo card.")
-    elseif msg == "ssc" then
-        -- Switch to SSC deck
-        currentDeck = "ssc"
-        self:GenerateAndDisplayCard()
-        print("Switched to SSC bingo card.")
-    elseif msg == "tk" then
-        -- Switch to Tempest Keep/Kael'thas deck
-        currentDeck = "tempest_keep"
-        self:GenerateAndDisplayCard()
-        print("Switched to Tempest Keep/Kael'thas bingo card.")
+        RaidBingoDB.playerMarks = {}
+        RaidBingoDB.bingoAnnounced = false
+        playerMarks = RaidBingoDB.playerMarks
+        self.bingoAnnounced = false
+        self:UpdateUI()
+        print("Raid Bingo marks reset.")
+    elseif msg == "new" then
+        self:NewCard()
+    elseif decks[msg] then
+        self:SelectDeck(decks[msg])
+        print("Switched to " .. msg .. " bingo deck.")
     else
-        print("Available commands:");
-        print("/rb toggle - Toggle the bingo card UI");
-        print("/rb reset - Reset all your marks");
-        print("/rb bt - Switch to Black Temple deck");
-        print("/rb hyjal - Switch to Mount Hyjal deck");
-        print("/rb ssc - Switch to SSC deck");
-        print("/rb tk - Switch to Tempest Keep/Kael'thas deck");
+        print("Raid Bingo commands: /rb toggle, /rb new, /rb reset, /rb bt, /rb hyjal, /rb ssc, /rb tk, /rb za, /rb generic")
     end
 end
 
@@ -341,34 +327,14 @@ SlashCmdList["RAIDBINGO"] = function(msg)
     addon:HandleCommand(msg);
 end;
 
--- Event handling
-function addon:OnEvent(event, ...)
-    if event == "PLAYER_ENTERING_WORLD" then
-        self:OnEnable();
-    elseif event == "ADDON_LOADED" then
-        local name = ...;
-        if name == "raid_bingo_addon" then
-            self:OnEnable();
-        end
-    end
-end
+-- The addon namespace is a table, not a Frame. Use one real frame for initialization.
+local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("ADDON_LOADED")
+eventFrame:SetScript("OnEvent", function(_, _, loadedAddon)
+    if loadedAddon == addonName then addon:OnEnable() end
+end)
 
--- Set up the event handler
-addon:SetScript("OnEvent", addon.OnEvent);
-
--- Initialize the addon when loaded
-local function OnAddonLoad()
-    addon:OnEnable();
-end
-
--- Register for the ADDON_LOADED event to initialize properly
-local frame = CreateFrame("Frame");
-frame:RegisterEvent("ADDON_LOADED");
-frame:SetScript("OnEvent", function(self, event, arg1)
-    if arg1 == "raid_bingo_addon" then
-        OnAddonLoad();
-    end
-end);
+SLASH_RAIDBINGO2 = "/raidbingo"
 
 -- Export the addon for use by other modules
 RaidBingoAddon = addon;

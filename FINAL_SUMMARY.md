@@ -1,21 +1,20 @@
-# Raid Bingo Addon checkpoint
+# Raid Bingo Addon candidate status
 
 ## Current state
 
-This branch contains an early standalone WoW raid bingo addon with a modular Lua layout, 5×5 card generation, clickable marking, selectable existing raid pools, and an in-game UI. Marks are self-reported and local.
+The current branch contains a standalone TBC Anniversary addon candidate with a 5×5 board, a raid dropdown, randomized pools, clickable private marks, a free center square, and a one-time BINGO yell for a completed horizontal or vertical line. Selectable pools include Black Temple, Mount Hyjal, SSC, Tempest Keep, Zul'Aman, and raid-generic content. Short raid pools are filled with unique generic squares so the card has 24 non-center cells.
 
-The addon targets Burning Crusade Classic Anniversary. The TOC now uses interface `20506`, corresponding to client patch 2.5.6 in current published client references. No in-game client verification has been performed. See [RESEARCH_CLIENT_VERSION.md](RESEARCH_CLIENT_VERSION.md).
+The TOC targets interface `20506`. Marks and card layout are local and self-reported. No encounter tracking, attendance, or achievements are verified. No in-game test has been performed; the candidate still needs owner testing in the Anniversary client.
 
-## Not complete
+## Release gates
 
-- Zul'Aman is not implemented in the current catalog. Earlier planning notes incorrectly listed Zul'Gurub bosses as Zul'Aman encounters; see [RESEARCH_ZUL_AMAN.md](RESEARCH_ZUL_AMAN.md).
-- A distinct raid-generic deck needs verification in code and the UI.
-- The catalog size and advertised feature counts have not been independently verified; older “500+” claims are removed from the user-facing summary.
-- In-game smoke testing and a verified downloadable release archive are still pending.
+- Source-level pool checks confirm 30 unique Zul'Aman entries and 30 unique generic entries, with no raid/boss terms in generic square text.
+- Build and verify a versioned ZIP from the exact candidate commit.
+- Confirm the pre-release notes identify it as unverified and include the smoke checklist.
+- Owner runs [SMOKE_TEST_CHECKLIST.md](SMOKE_TEST_CHECKLIST.md) in-game and reports results.
 
-## Next steps
+## Limits
 
-1. Implement and review the Zul'Aman and raid-generic pools.
-2. Run available static checks and inspect the install archive contents.
-3. Owner smoke-test the addon in the Anniversary client and report any Lua/API errors.
-4. Package a release candidate after those checks pass.
+- A Lua interpreter/parser is not installed in the current roost environment, so Lua syntax has not been independently compiled here.
+- The larger catalog's total unique-square count has not been audited; older “500+” claims are not verified.
+- Encounter-specific square accuracy and TBC client behavior need the in-game smoke test.

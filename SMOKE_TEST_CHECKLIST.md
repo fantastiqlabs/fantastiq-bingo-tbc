@@ -1,50 +1,33 @@
 # Raid Bingo Addon Smoke Test Checklist
 
-## Pre-Installation Verification
-- [ ] World of Warcraft: The Burning Crusade Anniversary Edition (Interface 20506) is installed
-- [ ] Addon folder structure is correct
-- [ ] raid_bingo_addon.toc file specifies Interface: 11201
+This test is for the Burning Crusade Classic Anniversary client with interface `20506`. The addon has not yet been verified in-game.
 
-## Installation Verification
-- [ ] Addon loads without errors in World of Warcraft
-- [ ] Addon appears in the addon list
-- [ ] No Lua errors appear during startup
+## Install and load
 
-## Basic Functionality Test
-- [ ] `/raidbingo` or `/rb` command opens the interface
-- [ ] Main bingo card displays correctly
-- [ ] Free center square is properly marked
-- [ ] Card shows 25 squares (5x5 grid)
-- [ ] All raid-specific decks are available in the selector
+- [ ] Extract `raid_bingo_addon` directly under the client's `Interface/AddOns` folder.
+- [ ] Enable Raid Bingo from the AddOns list.
+- [ ] Load into the world without Lua errors.
+- [ ] `/rb` and `/raidbingo` both open the card; `/rb` again hides it.
 
-## Raid-Specific Deck Testing
-- [ ] Black Temple deck loads and displays correctly
-- [ ] Mount Hyjal deck loads and displays correctly
-- [ ] Serpentshrine Cavern (SSC) deck loads and displays correctly
-- [ ] Tempest Keep (Kael'thas) deck loads and displays correctly
-- [ ] Zul'Aman deck loads and displays correctly
-- [ ] Raid-Generic Pool deck loads and displays correctly
+## Deck selection and cards
 
-## Card Generation Test
-- [ ] Random card generation works without duplicates
-- [ ] Free center square is properly marked
-- [ ] No duplicate squares in generated cards
-- [ ] All squares are from the selected raid pool
+- [ ] The dropdown lists Raid Generic, Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, and Zul'Aman.
+- [ ] Each dropdown choice shows a new 5×5 card.
+- [ ] `/rb za` selects Zul'Aman and shows Zul'Aman squares.
+- [ ] `/rb generic` selects the raid-neutral pool; its squares do not name raids or bosses.
+- [ ] The center says FREE and appears marked green.
+- [ ] No card contains duplicate squares; shorter raid pools can include generic squares.
+- [ ] `/rb new` creates another card; `/rb reset` clears marks.
 
-## Interface Functionality
-- [ ] Clicking squares marks them as complete
-- [ ] Right-clicking squares unmarks them
-- [ ] Card reset functionality works
-- [ ] Deck selection changes cards correctly
-- [ ] Interface is responsive and user-friendly
+## Marking and bingo
 
-## Post-Test Verification
-- [ ] All data persists between sessions
-- [ ] No performance impact on gameplay
-- [ ] Addon doesn't interfere with other addons
-- [ ] All raid-specific mechanics are properly represented
+- [ ] Clicking a square marks it green; clicking it again clears it.
+- [ ] Marks remain after reloading the UI or relogging with the same card.
+- [ ] Completing a horizontal or vertical line yells `BINGO!!!!!!!!!` with a random quote.
+- [ ] A card yells only once; a new card can announce again.
 
-## Notes
-- This checklist should be run in a TBC Anniversary Edition client
-- In-game compatibility verification is pending owner testing
-- Any Lua errors or unexpected behavior should be documented
+## Report
+
+- [ ] No Lua or UI errors during deck changes, marking, reset, or reload.
+- [ ] Record the client build, steps, and exact errors or unexpected results.
+- [ ] Confirm that square marks are manual/self-reported; no encounter events are claimed as detected.

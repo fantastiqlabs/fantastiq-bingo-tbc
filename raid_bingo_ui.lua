@@ -8,7 +8,7 @@ local addonName, addon = ...
 function addon:CreateUI()
     -- Create the main frame
     local frame = CreateFrame("Frame", "RaidBingoFrame", UIParent)
-    frame:SetSize(400, 500)
+    frame:SetSize(440, 500)
     frame:SetPoint("CENTER")
     frame:SetBackdrop({
         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -32,10 +32,45 @@ function addon:CreateUI()
     title:SetPoint("TOP", 0, -10)
     title:SetText("Raid Bingo Card")
 
+    local deckSelector = CreateFrame("Frame", "RaidBingoDeckSelector", frame, "UIDropDownMenuTemplate")
+    deckSelector:SetPoint("TOP", frame, "TOP", 0, -28)
+    UIDropDownMenu_SetWidth(deckSelector, 170)
+    local deckOptions = {
+        { label = "Raid Generic", value = "raid_generic" },
+        { label = "Black Temple", value = "black_temple" },
+        { label = "Mount Hyjal", value = "mount_hyjal" },
+        { label = "Serpentshrine Cavern", value = "ssc" },
+        { label = "Tempest Keep", value = "tempest_keep" },
+        { label = "Zul'Aman", value = "zul_aman" },
+    }
+    UIDropDownMenu_Initialize(deckSelector, function(dropdown, level)
+        for _, option in ipairs(deckOptions) do
+            local deckValue, deckLabel = option.value, option.label
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = deckLabel
+            info.value = deckValue
+            info.func = function()
+                addon:SelectDeck(deckValue)
+                UIDropDownMenu_SetSelectedValue(deckSelector, deckValue)
+                UIDropDownMenu_SetText(deckSelector, deckLabel)
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+    local selectedDeck = self:GetCurrentDeck()
+    for _, option in ipairs(deckOptions) do
+        if option.value == selectedDeck then
+            UIDropDownMenu_SetSelectedValue(deckSelector, option.value)
+            UIDropDownMenu_SetText(deckSelector, option.label)
+            break
+        end
+    end
+
     -- Create the grid of buttons (5x5)
     self.gridButtons = {}
     for i = 1, 25 do
-        local button = CreateFrame("Button", "RaidBingoButton" .. i, frame, "UIPanelButtonTemplate")
+        local buttonIndex = i
+        local button = CreateFrame("Button", "RaidBingoButton" .. buttonIndex, frame, "UIPanelButtonTemplate")
         button:SetSize(70, 40)
 
         -- Position buttons in a grid
@@ -51,7 +86,7 @@ function addon:CreateUI()
 
         -- Set up the button click handler
         button:SetScript("OnClick", function()
-            self:ToggleMark(i)
+            self:ToggleMark(buttonIndex)
         end)
 
         -- Store reference to button for later updates
@@ -60,7 +95,9 @@ function addon:CreateUI()
         -- Create font string for button text
         local buttonText = button:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         buttonText:SetPoint("CENTER", 0, 0)
+        buttonText:SetSize(64, 34)
         buttonText:SetJustifyH("CENTER")
+        buttonText:SetWordWrap(true)
         buttonText:SetText("")
 
         -- Store reference to the text
@@ -80,8 +117,9 @@ function addon:CreateUI()
     -- Store reference to the main frame
     self.mainFrame = frame
 
-    -- Initially hide the frame
+    -- Initially hide the frame, then populate it with the saved or selected deck.
     frame:Hide()
+    self:GenerateAndDisplayCard()
 end
 
 -- Update button state (marked or not marked)
@@ -103,21 +141,14 @@ function addon:UpdateButtonState(buttonIndex, isMarked)
 
     -- Update the text on the button
     if cardData and cardData.squares then
-        local squareText = cardData.squares[buttonIndex]
-        if not squareText then
-            squareText = ""
-        end
-
-        -- Special handling for "Free Space"
-        if squareText == "Free Space" then
-            button.text:SetText("FREE")
-        else
-            button.text:SetText(squareText)
-        end
+        local square = cardData.squares[buttonIndex]
+        local squareText = type(square) == "table" and square.text or square or ""
+        button.text:SetText(squareText == "Free Space" and "FREE" or squareText)
     end
 
     -- Set the button's tooltip
-    local tooltipText = cardData and cardData.squares[buttonIndex] or ""
+    local square = cardData and cardData.squares[buttonIndex]
+    local tooltipText = type(square) == "table" and square.text or square or ""
     if tooltipText ~= "" then
         button:SetScript("OnEnter", function()
             GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
@@ -131,30 +162,14 @@ function addon:UpdateButtonState(buttonIndex, isMarked)
     end
 end
 
--- Toggle mark state for a square
+-- Clicking a square toggles a private saved mark. The free center is automatic.
 function addon:ToggleMark(squareIndex)
-    -- Get the current player's marks
-    local playerMarks = self:GetPlayerMarks()
-
-    -- Check if this square is already marked by this player
-    local isMarked = false
-    if playerMarks[squareIndex] then
-        isMarked = playerMarks[squareIndex]
-    end
-
-    -- Toggle the mark state
-    playerMarks[squareIndex] = not isMarked
-
-    -- Save the updated marks
+    if squareIndex == 13 then return end
+    local marks = self:GetPlayerMarks()
+    marks[squareIndex] = not marks[squareIndex]
     self:SavePlayerMarks()
-
-    -- Update UI to reflect new state
-    self:UpdateButtonState(squareIndex, not isMarked)
-
-    -- Check for completed lines (horizontal or vertical)
-    if not isMarked then
-        self:CheckForCompletedLines()
-    end
+    self:UpdateCard()
+    if marks[squareIndex] then self:CheckForCompletedLines() end
 end
 
 -- Show the main frame
@@ -177,45 +192,36 @@ function addon:HideUI()
     end
 end
 
--- Check for completed lines (horizontal and vertical only)
+-- Horizontal/vertical lines are supported in this MVP; each card announces bingo once.
 function addon:CheckForCompletedLines()
-    local playerMarks = self:GetPlayerMarks()
-
-    -- Check horizontal lines (5 rows)
+    if self.bingoAnnounced then return end
+    local marks = self:GetPlayerMarks()
+    local function marked(index) return index == 13 or marks[index] == true end
+    local complete = false
     for row = 0, 4 do
-        local isRowComplete = true
+        local full = true
+        for col = 0, 4 do if not marked(row * 5 + col + 1) then full = false; break end end
+        if full then complete = true; break end
+    end
+    if not complete then
         for col = 0, 4 do
-            local index = row * 5 + col + 1
-            if not playerMarks[index] then
-                isRowComplete = false
-                break
-            end
-        end
-
-        -- If a row is complete, show a message (this would be expanded in full implementation)
-        if isRowComplete then
-            print("|cFFFF0000Line completed!|r")
+            local full = true
+            for row = 0, 4 do if not marked(row * 5 + col + 1) then full = false; break end end
+            if full then complete = true; break end
         end
     end
-
-    -- Check vertical lines (5 columns)
-    for col = 0, 4 do
-        local isColComplete = true
-        for row = 0, 4 do
-            local index = row * 5 + col + 1
-            if not playerMarks[index] then
-                isColComplete = false
-                break
-            end
-        end
-
-        -- If a column is complete, show a message (this would be expanded in full implementation)
-        if isColComplete then
-            print("|cFFFF0000Line completed!|r")
-        end
+    if complete then
+        local quotes = {
+            "The loot council totally saw that.",
+            "Roll need on the confetti!",
+            "Even LeChuck couldn't sink that card!",
+            "A three-headed monkey approves!",
+            "Please remain calm; the card is on fire.",
+        }
+        self.bingoAnnounced = true
+        RaidBingoDB.bingoAnnounced = true
+        SendChatMessage("BINGO!!!!!!!!! " .. quotes[math.random(#quotes)], "YELL")
     end
-
-    -- Note: Diagonal lines are not implemented for MVP as per requirements
 end
 
 -- Get the current player's marks from saved variables
@@ -243,50 +249,35 @@ end
 -- Get card data (from the addon's cardData)
 function addon:GetCardData()
     -- This will be set by the main addon when a card is generated
-    if not cardData then
-        -- Return default card if no cardData is available yet
-        return self:GetDefaultCard()
-    end
-    return cardData or {}
+    return self.currentCard or self:GetDefaultCard()
 end
 
--- Update the card display with current data
+-- Refresh the visible text and green mark state for the current board.
 function addon:UpdateCard()
     if not self.mainFrame then return end
-    
-    local cardData = self:GetCardData()
-    
-    -- Update all buttons in the grid
+    local card = self:GetCardData()
+    local marks = self:GetPlayerMarks()
     for i = 1, 25 do
         local button = self.gridButtons[i]
+        local square = card.squares and card.squares[i]
+        local text = type(square) == "table" and square.text or square or ""
+        local tooltipText = i == 13 and "Free Space" or text
         if button then
-            -- Get player marks from addon
-            local playerMarks = self:GetPlayerMarks()
-            local isMarked = playerMarks[i] or false
-            
-            -- Update button appearance based on mark state
-            if isMarked then
-                button:SetBackdropColor(0, 1, 0, 0.3) -- Green background for marked squares
-                button.text:SetTextColor(0, 0, 0, 1)   -- Black text for marked squares
+            local marked = i == 13 or marks[i] == true
+            if marked then
+                button:SetBackdropColor(0, 1, 0, 0.45)
+                button.text:SetTextColor(0, 0, 0, 1)
             else
-                button:SetBackdropColor(0, 0, 0, 0.5) -- Dark background for unmarked squares
-                button.text:SetTextColor(1, 1, 1, 1)   -- White text for unmarked squares
+                button:SetBackdropColor(0, 0, 0, 0.5)
+                button.text:SetTextColor(1, 1, 1, 1)
             end
-            
-            -- Update the text on the button
-            if cardData and cardData.squares then
-                local squareText = cardData.squares[i]
-                if not squareText then
-                    squareText = ""
-                end
-                
-                -- Special handling for center square
-                if i == 13 then  -- Center square index (1-based)
-                    button.text:SetText(squareText)
-                else
-                    button.text:SetText(squareText)
-                end
-            end
+            button.text:SetText(i == 13 and "FREE" or text)
+            button:SetScript("OnEnter", function()
+                GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
+                GameTooltip:SetText(tooltipText)
+                GameTooltip:Show()
+            end)
+            button:SetScript("OnLeave", function() GameTooltip:Hide() end)
         end
     end
 end

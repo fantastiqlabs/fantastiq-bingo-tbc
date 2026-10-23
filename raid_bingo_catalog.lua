@@ -1,5 +1,6 @@
 -- Raid Bingo Catalog for World of Warcraft: The Burning Crusade Anniversary Edition (Interface 20506)
--- Large curated catalog of 500+ bingo squares organized by raid moments, encounters, classes/roles, and mechanics
+local addonName, addon = ...
+-- Curated raid and raid-generic bingo square pools organized by raid moments, encounters, classes/roles, and mechanics
 
 -- Define the large curated catalog of bingo squares
 RaidBingoCatalog = {
@@ -189,109 +190,76 @@ RaidBingoCatalog = {
         { id = "funny_018", text = "Kill a named mob", category = "mob", type = "named_mob" },
         { id = "funny_019", text = "Use a class ability during raid", category = "ability", type = "class_ability" },
         { id = "funny_020", text = "Deal 100k damage to a single target", category = "damage", type = "damage_threshold" },
+    },
+
+    -- Self-reported, raid-independent moments. Keep names and encounter mechanics out of this pool.
+    raid_generic = {
+        { id = "generic_001", text = "Someone asks for a summon while inside", category = "group" },
+        { id = "generic_002", text = "Someone says 'one sec' and goes AFK", category = "group" },
+        { id = "generic_003", text = "A pet starts the pull early", category = "pet" },
+        { id = "generic_004", text = "Someone asks which way to go", category = "group" },
+        { id = "generic_005", text = "A player says they forgot a reagent", category = "supplies" },
+        { id = "generic_006", text = "Someone falls off a ledge", category = "movement" },
+        { id = "generic_007", text = "A player asks for a repair bot", category = "supplies" },
+        { id = "generic_008", text = "Someone forgets to loot", category = "loot" },
+        { id = "generic_009", text = "Two players say 'mana break' at once", category = "group" },
+        { id = "generic_010", text = "Someone asks for a portal", category = "group" },
+        { id = "generic_011", text = "A player realizes they forgot food", category = "supplies" },
+        { id = "generic_012", text = "Someone's pet gets lost", category = "pet" },
+        { id = "generic_013", text = "A player says 'I thought I was out of range'", category = "quote" },
+        { id = "generic_014", text = "Someone asks for a ready check", category = "group" },
+        { id = "generic_015", text = "A player changes gear after everyone is ready", category = "group" },
+        { id = "generic_016", text = "Someone mentions their repair bill", category = "supplies" },
+        { id = "generic_017", text = "A player says 'last one' and stays", category = "quote" },
+        { id = "generic_018", text = "Someone wins an item and asks if it is good", category = "loot" },
+        { id = "generic_019", text = "A player gets lost on the way back", category = "movement" },
+        { id = "generic_020", text = "Someone comments on the music", category = "quote" },
+        { id = "generic_021", text = "A player says 'who pulled?'", category = "quote" },
+        { id = "generic_022", text = "Someone's bag is full", category = "supplies" },
+        { id = "generic_023", text = "A player asks for a buff they already have", category = "group" },
+        { id = "generic_024", text = "Someone alt-tabs and misses a message", category = "group" },
+        { id = "generic_025", text = "A player says 'I have cooldowns' after the fight", category = "quote" },
+        { id = "generic_026", text = "Someone asks for a countdown", category = "group" },
+        { id = "generic_027", text = "A player drinks just before moving", category = "group" },
+        { id = "generic_028", text = "Someone forgets to turn on an aura", category = "class" },
+        { id = "generic_029", text = "A player says 'that was close'", category = "quote" },
+        { id = "generic_030", text = "Someone asks what dropped", category = "loot" },
+    },
+
+    -- Encounter-grounded moments across all six Zul'Aman bosses; all marks remain self-reported.
+    zul_aman = {
+        { id = "za_001", text = "Nalorakk shifts into bear form", category = "phase", raid = "Zul'Aman" },
+        { id = "za_002", text = "Nalorakk shifts back to troll form", category = "phase", raid = "Zul'Aman" },
+        { id = "za_003", text = "Someone is caught by Nalorakk's charge", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_004", text = "Nalorakk's roar gets a reaction", category = "moment", raid = "Zul'Aman" },
+        { id = "za_005", text = "Akil'zon calls down Electrical Storm", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_006", text = "Someone is lifted by Akil'zon's storm", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_007", text = "An Amani Eagle joins the Akil'zon fight", category = "add", raid = "Zul'Aman" },
+        { id = "za_008", text = "Akil'zon's lightning gets a comment", category = "moment", raid = "Zul'Aman" },
+        { id = "za_009", text = "Jan'alai breathes fire across the platform", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_010", text = "Jan'alai's bombs make everyone move", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_011", text = "A dragonhawk hatchling appears", category = "add", raid = "Zul'Aman" },
+        { id = "za_012", text = "Someone helps deal with Jan'alai's eggs", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_013", text = "Halazzi shifts into lynx form", category = "phase", raid = "Zul'Aman" },
+        { id = "za_014", text = "Halazzi splits into troll and lynx", category = "phase", raid = "Zul'Aman" },
+        { id = "za_015", text = "The Spirit of the Lynx appears", category = "add", raid = "Zul'Aman" },
+        { id = "za_016", text = "Someone gets clipped by Halazzi's Saber Lash", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_017", text = "Hex Lord Malacrass uses Spirit Bolts", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_018", text = "Malacrass borrows a raider's power", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_019", text = "Someone recognizes the power Malacrass stole", category = "moment", raid = "Zul'Aman" },
+        { id = "za_020", text = "Malacrass's spirits get everyone's attention", category = "moment", raid = "Zul'Aman" },
+        { id = "za_021", text = "Zul'jin changes into an animal form", category = "phase", raid = "Zul'Aman" },
+        { id = "za_022", text = "Zul'jin's bear form begins", category = "phase", raid = "Zul'Aman" },
+        { id = "za_023", text = "Zul'jin's eagle form begins", category = "phase", raid = "Zul'Aman" },
+        { id = "za_024", text = "Zul'jin's lynx form begins", category = "phase", raid = "Zul'Aman" },
+        { id = "za_025", text = "Zul'jin's dragonhawk form begins", category = "phase", raid = "Zul'Aman" },
+        { id = "za_026", text = "Someone reacts to Zul'jin's transformation", category = "moment", raid = "Zul'Aman" },
+        { id = "za_027", text = "Nalorakk's bear form makes the tank move", category = "moment", raid = "Zul'Aman" },
+        { id = "za_028", text = "Akil'zon's storm separates the group", category = "moment", raid = "Zul'Aman" },
+        { id = "za_029", text = "Jan'alai's hatchlings scatter across the room", category = "add", raid = "Zul'Aman" },
+        { id = "za_030", text = "Halazzi's lynx form gets a loud warning", category = "moment", raid = "Zul'Aman" },
     }
 }
 
 -- Export the catalog for use by other modules
 return RaidBingoCatalog
-
--- Function to get a random selection of squares for a card
-function addon:GetRandomCardSquares(numSquares, excludeCenter)
-    local allSquares = {}
-    
-    -- Collect all squares from different categories
-    for _, category in pairs(RaidBingoCatalog) do
-        for _, square in ipairs(category) do
-            table.insert(allSquares, square)
-        end
-    end
-    
-    -- Shuffle the array
-    for i = #allSquares, 2, -1 do
-        local j = math.random(i)
-        allSquares[i], allSquares[j] = allSquares[j], allSquares[i]
-    end
-    
-    -- Take only the required number of squares
-    local selectedSquares = {}
-    for i = 1, math.min(numSquares, #allSquares) do
-        table.insert(selectedSquares, allSquares[i])
-    end
-    
-    -- Ensure we have exactly numSquares by adding more if needed
-    while #selectedSquares < numSquares do
-        local additionalSquare = allSquares[math.random(#allSquares)]
-        table.insert(selectedSquares, additionalSquare)
-    end
-    
-    -- If we need to exclude center square, make sure it's not the free space
-    if excludeCenter then
-        -- Replace one random square with "Free Space" for center
-        local centerIndex = math.random(#selectedSquares)
-        selectedSquares[centerIndex] = { id = "free_space", text = "Free Space", category = "free" }
-    end
-    
-    return selectedSquares
-end
-
--- Function to get a specific square by ID
-function addon:GetSquareById(squareId)
-    for _, category in pairs(RaidBingoCatalog) do
-        for _, square in ipairs(category) do
-            if square.id == squareId then
-                return square
-            end
-        end
-    end
-    return nil
-end
-
--- Function to get squares from a specific raid
-function addon:GetRaidSquares(raidName)
-    local raidSquares = {}
-    
-    for _, category in pairs(RaidBingoCatalog) do
-        for _, square in ipairs(category) do
-            if square.raid == raidName then
-                table.insert(raidSquares, square)
-            end
-        end
-    end
-    
-    return raidSquares
-end
-
--- Function to get all squares from a specific category
-function addon:GetCategorySquares(categoryName)
-    local categorySquares = {}
-    
-    if RaidBingoCatalog[categoryName] then
-        for _, square in ipairs(RaidBingoCatalog[categoryName]) do
-            table.insert(categorySquares, square)
-        end
-    end
-    
-    return categorySquares
-end
-
--- Function to get a random square from the catalog
-function addon:GetRandomSquare()
-    local allSquares = {}
-    
-    -- Collect all squares from different categories
-    for _, category in pairs(RaidBingoCatalog) do
-        for _, square in ipairs(category) do
-            table.insert(allSquares, square)
-        end
-    end
-    
-    -- Return a random square
-    if #allSquares > 0 then
-        return allSquares[math.random(#allSquares)]
-    else
-        return nil
-    end
-end
-
--- Export the catalog for other modules to access
-print("Raid Bingo Catalog loaded with " .. #RaidBingoCatalog.black_temple .. " Black Temple squares, " .. #RaidBingoCatalog.mount_hyjal .. " Mount Hyjal squares, " .. #RaidBingoCatalog.ssc .. " SSC squares, and " .. #RaidBingoCatalog.tempest_keep .. " Tempest Keep squares")

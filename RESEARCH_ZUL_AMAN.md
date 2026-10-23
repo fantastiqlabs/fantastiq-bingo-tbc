@@ -1,12 +1,12 @@
 # Zul'Aman deck status and encounter reference
 
-Zul'Aman is a planned raid-specific deck. The current Lua catalog does not yet contain a Zul'Aman deck; the previously generated notes incorrectly listed Zul'Gurub bosses and should not be used as content.
+## Current candidate implementation
 
-The TBC Zul'Aman boss roster to use when implementing the deck is Akil'zon, Nalorakk, Jan'alai, Halazzi, Hex Lord Malacrass, and Zul'jin. Validate each proposed bingo square against encounter-specific sources and keep uncertain mechanics out of the initial deck.
+The root Lua catalog now includes 30 self-reported Zul'Aman squares under `zul_aman`, with entries for Nalorakk, Akil'zon, Jan'alai, Halazzi, Hex Lord Malacrass, and Zul'jin. The selected pool is available in the UI dropdown and `/rb za` command. The addon does not infer or verify any encounter event.
+
+The boss roster was the verified scope of the earlier research. The individual mechanic-based squares in this first candidate still require owner review during the in-game smoke test; report disputed or inaccurate squares before a stable release. Treat the listed squares as proposed manual observations, not automated game facts.
 
 ## Follow-up
 
-- Add a `zul_aman` catalog pool with recognizable, accurate moments for all six bosses.
-- Add generic TBC raid squares to a separate pool that avoids raid and boss names.
-- Verify selectors and random card generation include both pools without duplicate squares.
-- Smoke-test deck selection in the Burning Crusade Classic Anniversary client.
+- Check all 30 squares against encounter references and remove any inaccurate mechanics.
+- Run the Zul'Aman dropdown/card smoke test in the Anniversary client.

@@ -1,24 +1,23 @@
-# Raid Bingo Addon implementation checkpoint
+# Raid Bingo Addon implementation candidate
 
-## Status: early checkpoint; not release-ready
+## Status: candidate for owner smoke testing; in-game validation pending
 
-The repository contains an initial standalone addon implementation with Lua modules for card generation, catalog data, UI, and utility logic. The visible feature set and compatibility still need owner-side game testing.
+The addon is standalone and targets Burning Crusade Classic Anniversary interface `20506`. It now provides a 5×5 randomized board, a free center, a deck dropdown, and manual local marks. The addon does not detect raid events or verify player claims.
 
-## Present in the code
+## Implemented for this candidate
 
-- 5×5 card layout with a free center square
-- Clickable local square marking
-- Modular Lua files and addon TOC metadata
-- Several catalog pools and basic random card generation
+- Raid dropdown options for Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, Zul'Aman, and Raid Generic.
+- 30 Zul'Aman squares spanning Nalorakk, Akil'zon, Jan'alai, Halazzi, Hex Lord Malacrass, and Zul'jin.
+- 30 raid-neutral squares without raid or boss names.
+- Unique selection for each 24 non-center cell; shorter raid-specific pools may be supplemented from the generic pool.
+- Saved board/marks, green click-to-mark state, `/rb new`, `/rb reset`, and a single BINGO yell with a random quote per card.
+- `/rb` and `/raidbingo` commands.
 
-## Known gaps
+## Pending
 
-- Zul'Aman is planned but not present in the current Lua catalog. Earlier notes confused Zul'Aman with Zul'Gurub; see `RESEARCH_ZUL_AMAN.md`.
-- The generic pool design is documented, but its selectable implementation needs verification.
-- Catalog size and previously advertised per-raid counts are unverified.
-- Client target is set to Interface `20506` from current published references; in-game compatibility is unverified.
-- The install guide and package still need review against the owner's actual client.
+- Owner smoke test in the actual Anniversary client; no in-game claims are made.
+- Lua compilation was unavailable in roost because no Lua runtime/parser is installed.
+- Broader catalog count and every legacy square's accuracy remain unaudited.
+- ZIP/release checks must be tied to the exact feature commit and clearly marked as an unverified pre-release.
 
-## Next step
-
-Complete [SMOKE_TEST_CHECKLIST.md](SMOKE_TEST_CHECKLIST.md) in the Burning Crusade Classic Anniversary client, record any API or UI errors, then finish and validate the planned decks before preparing a release candidate.
+See [INSTALL_GUIDE.md](INSTALL_GUIDE.md) and [SMOKE_TEST_CHECKLIST.md](SMOKE_TEST_CHECKLIST.md).

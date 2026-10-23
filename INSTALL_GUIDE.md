@@ -1,39 +1,30 @@
 # Raid Bingo Addon Installation Guide
 
-## Prerequisites
-- World of Warcraft: The Burning Crusade Classic Anniversary (Interface 20506)
-- Compatible with all TBC raid content including Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, and Zul'Aman
+## Requirements
 
-## Installation Steps
+- World of Warcraft: The Burning Crusade Classic Anniversary, interface `20506`.
+- A downloadable GitHub test pre-release of Raid Bingo.
+- In-game compatibility is not verified yet. Run the smoke checklist after installing.
 
-### Method 1: Manual Installation
-1. Close World of Warcraft
-2. Navigate to your World of Warcraft addons folder for the installed Classic client:
+## Install
+
+1. Close World of Warcraft.
+2. Open the AddOns folder for the Anniversary client:
    - Windows: `World of Warcraft\_classic_\Interface\AddOns`
-   - Mac: `/Applications/World of Warcraft/_classic_/Interface/AddOns`
-3. Extract the Raid Bingo addon ZIP file into the AddOns folder
-4. Launch World of Warcraft
+   - macOS: `/Applications/World of Warcraft/_classic_/Interface/AddOns`
+3. Extract the ZIP so the folder `raid_bingo_addon` is directly inside `AddOns`, with `raid_bingo_addon.toc` inside it.
+4. Start the game, enable Raid Bingo on the character select AddOns screen, and enter the world.
 
-### Method 2: Using CurseForge/WoW Interface (if available)
-1. Download the addon from the official source
-2. Place the extracted folder in your AddOns directory
-3. Restart World of Warcraft
+## Use
 
-## First-Time Setup
-1. Launch World of Warcraft with the addon enabled
-2. The addon will automatically initialize
-3. Access the addon interface by typing `/raidbingo` or `/rb` in chat
+- Type `/rb` or `/raidbingo` to show or hide the card.
+- Choose a deck from the dropdown, or use `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, or `/rb generic`.
+- Click a square to mark it green; click it again to unmark it. The free center is automatic.
+- Complete a horizontal or vertical line to yell `BINGO!!!!!!!!!` with a random joke. The addon announces once per card.
+- Use `/rb new` for another random card or `/rb reset` to clear marks.
 
-## Supported Raid Decks
-- Black Temple
-- Mount Hyjal
-- Serpentshrine Cavern (SSC)
-- Tempest Keep (Kael'thas encounter)
-- Zul'Aman
-- Raid-Generic Pool (no raid-specific references)
+The Zul'Aman deck has Zul'Aman encounter squares. Shorter raid-specific pools are topped up with unique generic squares to fill a card. The raid-generic deck contains only raid-neutral squares. Marks are private and self-reported; the addon does not detect encounter events or verify achievements.
 
-## Configuration
-The addon supports multiple card variants and raid-specific decks. Select your preferred deck from the in-game interface.
+## Test candidate status
 
-## Support
-For issues or questions, please check the official repository or contact the addon maintainer.
+This archive is a pre-release candidate. Automated archive checks do not replace client testing. Follow [SMOKE_TEST_CHECKLIST.md](SMOKE_TEST_CHECKLIST.md), record any Lua errors, and report whether the interface, deck selector, marks, and yell work in your client.
