@@ -1,4 +1,4 @@
--- Raid Bingo Addon UI Component for World of Warcraft: The Burning Crusade (1.12.1)
+-- Raid Bingo Addon UI Component for World of Warcraft: The Burning Crusade Anniversary Edition (Interface 20506)
 -- This file handles all UI related functionality
 
 -- Create the addon namespace

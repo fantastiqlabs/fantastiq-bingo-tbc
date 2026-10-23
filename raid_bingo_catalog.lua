@@ -1,4 +1,4 @@
--- Raid Bingo Catalog for World of Warcraft: The Burning Crusade (1.12.1)
+-- Raid Bingo Catalog for World of Warcraft: The Burning Crusade Anniversary Edition (Interface 20506)
 -- Large curated catalog of 500+ bingo squares organized by raid moments, encounters, classes/roles, and mechanics
 
 -- Define the large curated catalog of bingo squares

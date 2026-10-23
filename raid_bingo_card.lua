@@ -1,4 +1,4 @@
--- Raid Bingo Card Definition for World of Warcraft: The Burning Crusade (1.12.1)
+-- Raid Bingo Card Definition for World of Warcraft: The Burning Crusade Anniversary Edition (Interface 20506)
 -- This defines the fixed 5x5 bingo card with predefined content
 
 -- Create the addon namespace

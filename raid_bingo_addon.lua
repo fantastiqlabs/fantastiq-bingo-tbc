@@ -1,4 +1,4 @@
--- Raid Bingo Addon for World of Warcraft: The Burning Crusade (1.12.1)
+-- Raid Bingo Addon for World of Warcraft: The Burning Crusade Anniversary Edition (Interface 20506)
 -- Main addon file
 
 -- Create the addon namespace

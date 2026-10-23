@@ -1,10 +1,10 @@
 ## Raid Bingo Addon
-## World of Warcraft: The Burning Crusade
+## World of Warcraft: The Burning Crusade Classic Anniversary
 
 ## Title: Raid Bingo Addon
 ## Version: 1.0.0
 ## Author: HelloThereGuild
-## Interface: 11201
+## Interface: 20506
 ## SavedVariables: RaidBingoDB
 
 raid_bingo_addon.lua
