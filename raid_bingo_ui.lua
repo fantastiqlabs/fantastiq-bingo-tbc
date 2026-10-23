@@ -6,22 +6,14 @@ local addonName, addon = ...
 local BOX_SCALE_PRESETS = { 80, 100, 120 }
 local TEXT_SIZE_PRESETS = { 5, 6, 7, 8, 9, 10 }
 
--- Marked cells use an explicit green texture rather than tinting the button's
--- backdrop, whose appearance varies between client button templates.
+-- Keep the original Blizzard button art. The marked fill is inset far enough
+-- that it only covers the button's interior and cannot obscure its frame.
 local function SetButtonMarked(button, isMarked)
-    if button.markOverlay then
+    if button.markFill then
         if isMarked then
-            button.markOverlay:Show()
+            button.markFill:Show()
         else
-            button.markOverlay:Hide()
-        end
-    end
-
-    if button.text then
-        if isMarked then
-            button.text:SetTextColor(0, 0, 0, 1)
-        else
-            button.text:SetTextColor(1, 1, 1, 1)
+            button.markFill:Hide()
         end
     end
 end
@@ -96,7 +88,7 @@ function addon:UpdateGridLayout()
 
     local startX = (frameWidth - gridWidth) / 2
     local topOffset = (frameHeight - gridHeight) / 2
-    local inset = 4 * scale
+    local inset = 8 * scale
     for index, button in ipairs(self.gridButtons) do
         local row = math.floor((index - 1) / 5)
         local col = (index - 1) % 5
@@ -104,9 +96,9 @@ function addon:UpdateGridLayout()
         button:ClearAllPoints()
         button:SetPoint("TOPLEFT", self.mainFrame, "TOPLEFT", startX + col * (buttonWidth + gapX), -topOffset - row * (buttonHeight + gapY))
 
-        button.markOverlay:ClearAllPoints()
-        button.markOverlay:SetPoint("TOPLEFT", button, "TOPLEFT", inset, -inset)
-        button.markOverlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -inset, inset)
+        button.markFill:ClearAllPoints()
+        button.markFill:SetPoint("TOPLEFT", button, "TOPLEFT", inset, -inset)
+        button.markFill:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -inset, inset)
         button.text:ClearAllPoints()
         button.text:SetPoint("CENTER", button, "CENTER")
         button.text:SetSize(buttonWidth - 8 * scale, buttonHeight - 8 * scale)
@@ -234,13 +226,12 @@ function addon:CreateUI()
         local button = CreateFrame("Button", "RaidBingoButton" .. buttonIndex, frame, "UIPanelButtonTemplate")
         button:SetSize(100, 82)
 
-        local markOverlay = button:CreateTexture(nil, "OVERLAY")
-        -- Leave the button's own border visible when the green fill is shown.
-        markOverlay:SetPoint("TOPLEFT", button, "TOPLEFT", 4, -4)
-        markOverlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -4, 4)
-        markOverlay:SetColorTexture(0, 0.85, 0.1, 0.9)
-        markOverlay:Hide()
-        button.markOverlay = markOverlay
+        local markFill = button:CreateTexture(nil, "OVERLAY")
+        markFill:SetPoint("TOPLEFT", button, "TOPLEFT", 8, -8)
+        markFill:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -8, 8)
+        markFill:SetColorTexture(0, 0.85, 0.1, 1)
+        markFill:Hide()
+        button.markFill = markFill
 
         -- Set up the button click handler
         button:SetScript("OnClick", function()

@@ -28,8 +28,8 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 
 - [ ] Long square labels wrap and scale down while keeping visible padding inside their cells.
 - [ ] The larger 5×5 grid is centered in the window and labels remain fully visible.
-- [ ] Clicking a square marks it green; clicking it again clears it.
-- [ ] Marked cells look green rather than dark red, and retain their button borders.
+- [ ] Clicking a square changes only its red interior fill to green; clicking it again restores red.
+- [ ] The original Blizzard button frame and text remain unchanged and clearly visible in both marked and unmarked states.
 - [ ] The center cell matches the other cell dimensions, stays green, and centers `FREE`.
 - [ ] Marks remain after reloading the UI or relogging with the same card.
 - [ ] Completing a horizontal or vertical line yells `BINGO!!!!!!!!!` with one randomly selected Monkey Island-themed quip.
