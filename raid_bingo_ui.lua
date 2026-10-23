@@ -3,6 +3,7 @@
 
 -- Create the addon namespace
 local addonName, addon = ...
+local WINDOW_SCALE_PRESETS = { 25, 50, 75, 100, 125, 150 }
 
 -- Marked cells use an explicit green texture rather than tinting the button's
 -- backdrop, whose appearance varies between client button templates.
@@ -30,21 +31,53 @@ local function SetButtonLabel(button, label)
     text:SetText(label)
     if not labelFont then return end
 
-    -- Start at a readable size, then step down only as needed to leave the
-    -- wrapped label inside the padded cell area.
-    for fontSize = 13, 8, -1 do
+    -- Check measured height and estimated wrapped height so labels also fit
+    -- on clients where FontString reports stale height after changing fonts.
+    for fontSize = 10, 6, -1 do
         text:SetFont(labelFont, fontSize, labelFontFlags)
-        if text:GetStringHeight() <= text:GetHeight() then
+        local charactersPerLine = math.max(1, math.floor(text:GetWidth() / (fontSize * 0.58)))
+        local estimatedLines = math.ceil(#label / charactersPerLine)
+        local estimatedHeight = estimatedLines * fontSize * 1.25
+        if text:GetStringHeight() <= text:GetHeight() and estimatedHeight <= text:GetHeight() then
             break
         end
     end
+end
+
+function addon:SetWindowScale(percent)
+    local validScale = false
+    for _, preset in ipairs(WINDOW_SCALE_PRESETS) do
+        if preset == percent then
+            validScale = true
+            break
+        end
+    end
+    if not validScale then return false end
+
+    RaidBingoDB = RaidBingoDB or {}
+    RaidBingoDB.windowScale = percent
+    if self.mainFrame then self.mainFrame:SetScale(percent / 100) end
+    if self.scaleButton then self.scaleButton:SetText(percent .. "%") end
+    return true
+end
+
+function addon:CycleWindowScale()
+    RaidBingoDB = RaidBingoDB or {}
+    local current = RaidBingoDB.windowScale or 100
+    for index, preset in ipairs(WINDOW_SCALE_PRESETS) do
+        if preset == current then
+            self:SetWindowScale(WINDOW_SCALE_PRESETS[index % #WINDOW_SCALE_PRESETS + 1])
+            return
+        end
+    end
+    self:SetWindowScale(100)
 end
 
 -- Create and manage the main UI frame
 function addon:CreateUI()
     -- Create the main frame
     local frame = CreateFrame("Frame", "RaidBingoFrame", UIParent, "BackdropTemplate")
-    frame:SetSize(440, 500)
+    frame:SetSize(620, 650)
     frame:SetPoint("CENTER")
     if frame.SetBackdrop then
         frame:SetBackdrop({
@@ -71,6 +104,12 @@ function addon:CreateUI()
     local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     title:SetPoint("TOP", 0, -10)
     title:SetText("Raid Bingo Card")
+
+    local scaleButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    scaleButton:SetSize(58, 22)
+    scaleButton:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -17)
+    scaleButton:SetScript("OnClick", function() addon:CycleWindowScale() end)
+    self.scaleButton = scaleButton
 
     local deckSelector = CreateFrame("Frame", "RaidBingoDeckSelector", frame, "UIDropDownMenuTemplate")
     deckSelector:SetPoint("TOP", frame, "TOP", 0, -28)
@@ -111,13 +150,13 @@ function addon:CreateUI()
     for i = 1, 25 do
         local buttonIndex = i
         local button = CreateFrame("Button", "RaidBingoButton" .. buttonIndex, frame, "UIPanelButtonTemplate")
-        button:SetSize(78, 70)
+        button:SetSize(100, 82)
 
         -- Position buttons in a grid
         local row = math.floor((i - 1) / 5)
         local col = (i - 1) % 5
 
-        button:SetPoint("TOPLEFT", frame, "TOPLEFT", 10 + col * 80, -72 - row * 78)
+        button:SetPoint("TOPLEFT", frame, "TOPLEFT", 40 + col * 110, -104 - row * 90)
 
         local markOverlay = button:CreateTexture(nil, "OVERLAY")
         markOverlay:SetAllPoints(button)
@@ -136,10 +175,12 @@ function addon:CreateUI()
         -- Create font string for button text
         local buttonText = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         buttonText:SetPoint("CENTER", 0, 0)
-        buttonText:SetSize(70, 62)
+        buttonText:SetSize(92, 74)
         buttonText:SetDrawLayer("OVERLAY", 1)
         buttonText:SetJustifyH("CENTER")
+        buttonText:SetJustifyV("MIDDLE")
         buttonText:SetWordWrap(true)
+        if buttonText.SetNonSpaceWrap then buttonText:SetNonSpaceWrap(true) end
         buttonText:SetText("")
 
         -- Store reference to the text
@@ -158,6 +199,13 @@ function addon:CreateUI()
 
     -- Store reference to the main frame
     self.mainFrame = frame
+    if not self:SetWindowScale(RaidBingoDB and RaidBingoDB.windowScale or 100) then
+        self:SetWindowScale(100)
+    end
+
+    local footer = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    footer:SetPoint("BOTTOM", frame, "BOTTOM", 0, 16)
+    footer:SetText("Click a square to mark it   |   /rb new for another card")
 
     -- Initially hide the frame, then populate it with the saved or selected deck.
     frame:Hide()

@@ -355,11 +355,18 @@ function addon:HandleCommand(msg)
         print("Raid Bingo marks reset.")
     elseif msg == "new" then
         self:NewCard()
+    elseif msg == "scale" then
+        self:CycleWindowScale()
+    elseif msg:match("^scale%s+%d+$") then
+        local percent = tonumber(msg:match("%d+"))
+        if not self:SetWindowScale(percent) then
+            print("Raid Bingo scale options: 25, 50, 75, 100, 125, or 150. Example: /rb scale 100")
+        end
     elseif decks[msg] then
         self:SelectDeck(decks[msg])
         print("Switched to " .. msg .. " bingo deck.")
     else
-        print("Raid Bingo commands: /rb toggle, /rb new, /rb reset, /rb bt, /rb hyjal, /rb ssc, /rb tk, /rb za, /rb generic")
+        print("Raid Bingo commands: /rb toggle, /rb new, /rb reset, /rb scale [25|50|75|100|125|150], /rb bt, /rb hyjal, /rb ssc, /rb tk, /rb za, /rb generic")
     end
 end
 
