@@ -12,6 +12,7 @@ local playerMarks = {};
 
 -- Current deck selection (will be set based on raid type)
 local currentDeck = "raid_generic";
+local eventFrame
 
 -- Initialize saved state and create the interface once the addon files are loaded.
 function addon:OnEnable()
@@ -24,6 +25,8 @@ function addon:OnEnable()
     end
 
     self:CreateUI()
+    self:CreateMinimapButton()
+    self:SetAutoMarkEnabled(RaidBingoDB.autoMarkEvents == true)
     print("|cFF00FF00Raid Bingo Addon loaded. Marks are self-reported and private.|r")
 end
 
@@ -337,6 +340,76 @@ function addon:UpdateUI()
     if self.UpdateCard then self:UpdateCard() end
 end
 
+-- Event rules live on individual catalog squares. We deliberately do not infer
+-- matches from the English display text: only explicitly curated IDs qualify.
+local function RuleMatches(rule, subevent, sourceGUID, destGUID, spellId)
+    if type(rule) ~= "table" then return false end
+    -- Require a spell ID so a broad subevent such as SPELL_DAMAGE cannot mark
+    -- unrelated squares just because any raid damage occurred.
+    if not rule.spellId then return false end
+    if rule.subevent and rule.subevent ~= subevent then return false end
+    if rule.spellId ~= spellId then return false end
+    if rule.sourceGUID and rule.sourceGUID ~= sourceGUID then return false end
+    if rule.target == "player" and destGUID ~= UnitGUID("player") then return false end
+    if rule.target == "raid" then
+        local isRaidMember = destGUID == UnitGUID("player")
+        if not isRaidMember and UnitInRaid then
+            for index = 1, 40 do
+                local unit = "raid" .. index
+                if UnitExists(unit) and UnitGUID(unit) == destGUID then isRaidMember = true; break end
+            end
+        end
+        if not isRaidMember then return false end
+    end
+    return true
+end
+
+function addon:SetAutoMarkEnabled(enabled)
+    RaidBingoDB = RaidBingoDB or {}
+    -- Classic clients have returned either true/false or 1/nil from
+    -- CheckButton:GetChecked(); normalize every truthy checked value.
+    RaidBingoDB.autoMarkEvents = not not enabled
+    if self.autoMarkCheckbox then self.autoMarkCheckbox:SetChecked(RaidBingoDB.autoMarkEvents) end
+    if eventFrame then
+        if RaidBingoDB.autoMarkEvents then
+            eventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        else
+            eventFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+        end
+    end
+    if RaidBingoDB.autoMarkEvents then
+        local ruleCount = 0
+        for _, square in ipairs((self:GetCardData() or {}).squares or {}) do
+            if type(square) == "table" and type(square.autoMark) == "table" and square.autoMark.spellId then
+                ruleCount = ruleCount + 1
+            end
+        end
+        if ruleCount == 0 then
+            print("Raid Bingo: this card has no verified event rules yet; squares remain manual.")
+        end
+    end
+end
+
+function addon:OnCombatLogEvent()
+    if not RaidBingoDB or not RaidBingoDB.autoMarkEvents or not CombatLogGetCurrentEventInfo then return end
+    local _, subevent, _, sourceGUID, _, _, _, destGUID, _, _, _, spellId = CombatLogGetCurrentEventInfo()
+    local squares = self:GetCardData().squares or {}
+    local marks = self:GetPlayerMarks()
+    local changed = false
+    for index, square in ipairs(squares) do
+        if index ~= 13 and not marks[index] and type(square) == "table"
+            and RuleMatches(square.autoMark, subevent, sourceGUID, destGUID, spellId) then
+            marks[index] = true
+            changed = true
+        end
+    end
+    if changed then
+        self:SavePlayerMarks()
+        self:UpdateCard()
+        self:CheckForCompletedLines()
+    end
+end
+
 -- Slash commands remain available alongside the visible deck dropdown.
 function addon:HandleCommand(msg)
     msg = string.lower((msg or ""):match("^%s*(.-)%s*$"))
@@ -355,18 +428,14 @@ function addon:HandleCommand(msg)
         print("Raid Bingo marks reset.")
     elseif msg == "new" then
         self:NewCard()
-    elseif msg == "scale" then
-        self:CycleWindowScale()
-    elseif msg:match("^scale%s+%d+$") then
-        local percent = tonumber(msg:match("%d+"))
-        if not self:SetWindowScale(percent) then
-            print("Raid Bingo scale options: 25, 50, 75, 100, 125, or 150. Example: /rb scale 100")
-        end
+    elseif msg == "automark" then
+        self:SetAutoMarkEnabled(not (RaidBingoDB and RaidBingoDB.autoMarkEvents))
+        print("Raid Bingo event automarking: " .. (RaidBingoDB.autoMarkEvents and "on" or "off"))
     elseif decks[msg] then
         self:SelectDeck(decks[msg])
         print("Switched to " .. msg .. " bingo deck.")
     else
-        print("Raid Bingo commands: /rb toggle, /rb new, /rb reset, /rb scale [25|50|75|100|125|150], /rb bt, /rb hyjal, /rb ssc, /rb tk, /rb za, /rb generic")
+        print("Raid Bingo commands: /rb toggle, /rb new, /rb reset, /rb automark, /rb bt, /rb hyjal, /rb ssc, /rb tk, /rb za, /rb generic")
     end
 end
 
@@ -377,10 +446,14 @@ SlashCmdList["RAIDBINGO"] = function(msg)
 end;
 
 -- The addon namespace is a table, not a Frame. Use one real frame for initialization.
-local eventFrame = CreateFrame("Frame")
+eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("ADDON_LOADED")
-eventFrame:SetScript("OnEvent", function(_, _, loadedAddon)
-    if loadedAddon == addonName then addon:OnEnable() end
+eventFrame:SetScript("OnEvent", function(_, event, loadedAddon)
+    if event == "ADDON_LOADED" and loadedAddon == addonName then
+        addon:OnEnable()
+    elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
+        addon:OnCombatLogEvent()
+    end
 end)
 
 SLASH_RAIDBINGO2 = "/raidbingo"

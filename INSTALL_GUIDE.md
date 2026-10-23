@@ -19,12 +19,14 @@
 
 - Type `/rb` or `/raidbingo` to show or hide the card.
 - Choose a deck from the dropdown, or use `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, or `/rb generic`.
-- Click the percentage button to cycle window size. Choose a specific preset with `/rb scale 25`, `/rb scale 50`, `/rb scale 75`, `/rb scale 100`, `/rb scale 125`, or `/rb scale 150`. The setting is saved; `/rb scale` cycles to the next preset.
+- Use the **Boxes** dropdown for 80%, 100%, or 120% cell sizes, and the **Text** dropdown for 5–10 pt text. Text can shrink further when needed to fit a long label. Both settings are saved.
+- Click the minimap icon to show or hide the card. `/rb` and `/raidbingo` also toggle it.
+- Enable **Automark based on events** to listen for combat-log events. Automatic marks only happen for squares with a verified spell-ID rule; the current catalog does not yet have verified rules, so for now all squares remain manual. You can also toggle the setting with `/rb automark`.
 - Click a square to mark it green; click it again to unmark it. The free center is automatic.
 - Complete a horizontal or vertical line to yell `BINGO!!!!!!!!!` with one randomly selected pirate-adventure quip. The addon announces once per card.
 - Use `/rb new` for another random card or `/rb reset` to clear marks.
 
-The Zul'Aman deck has Zul'Aman encounter squares. Each raid-specific card randomly uses 2–8 unique raid squares and fills the remaining spaces with generic moments. The raid-generic deck contains only raid-neutral squares. Marks are private and self-reported; the addon does not detect encounter events or verify achievements.
+The Zul'Aman deck has Zul'Aman encounter squares. Each raid-specific card randomly uses 2–8 unique raid squares and fills the remaining spaces with generic moments. The raid-generic deck contains only raid-neutral squares. Unmatched squares are self-reported. `/eventtrace` can help inspect game events during client testing, while combat-log spell IDs should be verified before adding automatic rules.
 
 ## Test candidate status
 

@@ -15,6 +15,9 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] The dropdown lists Raid Generic, Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, and Zul'Aman.
 - [ ] Each dropdown choice shows a new 5×5 card.
 - [ ] `/rb za` selects Zul'Aman and shows Zul'Aman squares.
+- [ ] The Boxes dropdown selects 80%, 100%, and 120%; the Text dropdown selects 5–10 pt and long labels still fit.
+- [ ] The minimap button toggles the card without Lua errors.
+- [ ] The saved **Automark based on events** checkbox persists; `/rb automark` toggles it too.
 - [ ] `/rb generic` selects the raid-neutral pool; its squares do not name raids or bosses.
 - [ ] Raid-specific cards contain a random 2–8 squares for that raid and generic moments in the remaining spaces.
 - [ ] The center says FREE and appears marked green.
@@ -28,7 +31,6 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] Clicking a square marks it green; clicking it again clears it.
 - [ ] Marked cells look green rather than dark red, and retain their button borders.
 - [ ] The center cell matches the other cell dimensions, stays green, and centers `FREE`.
-- [ ] The scale button and `/rb scale` cycle through all six persisted window sizes; `/rb scale 100` restores normal size.
 - [ ] Marks remain after reloading the UI or relogging with the same card.
 - [ ] Completing a horizontal or vertical line yells `BINGO!!!!!!!!!` with one randomly selected Monkey Island-themed quip.
 - [ ] A card yells only once; a new card can announce again.
@@ -37,4 +39,5 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 
 - [ ] No Lua or UI errors during deck changes, marking, reset, or reload.
 - [ ] Record the client build, steps, and exact errors or unexpected results.
-- [ ] Confirm that square marks are manual/self-reported; no encounter events are claimed as detected.
+- [ ] Confirm that squares without explicit verified spell-ID rules remain manual; no broad combat event marks unrelated squares.
+- [ ] Use `/eventtrace` and combat-log data during client testing before adding a square's event rule. Note that `/eventtrace` is diagnostic and its history is not directly readable by the addon.

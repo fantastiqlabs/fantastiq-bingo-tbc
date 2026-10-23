@@ -3,7 +3,8 @@
 
 -- Create the addon namespace
 local addonName, addon = ...
-local WINDOW_SCALE_PRESETS = { 25, 50, 75, 100, 125, 150 }
+local BOX_SCALE_PRESETS = { 80, 100, 120 }
+local TEXT_SIZE_PRESETS = { 5, 6, 7, 8, 9, 10 }
 
 -- Marked cells use an explicit green texture rather than tinting the button's
 -- backdrop, whose appearance varies between client button templates.
@@ -33,7 +34,8 @@ local function SetButtonLabel(button, label)
 
     -- Check measured height and estimated wrapped height so labels also fit
     -- on clients where FontString reports stale height after changing fonts.
-    for fontSize = 7, 5, -1 do
+    local preferredFontSize = RaidBingoDB and RaidBingoDB.textSize or 7
+    for fontSize = preferredFontSize, 5, -1 do
         text:SetFont(labelFont, fontSize, labelFontFlags)
         local charactersPerLine = math.max(1, math.floor(text:GetWidth() / (fontSize * 0.58)))
         local estimatedLines = math.ceil(#label / charactersPerLine)
@@ -44,33 +46,87 @@ local function SetButtonLabel(button, label)
     end
 end
 
-function addon:SetWindowScale(percent)
-    local validScale = false
-    for _, preset in ipairs(WINDOW_SCALE_PRESETS) do
-        if preset == percent then
-            validScale = true
-            break
-        end
+function addon:SetBoxScale(percent)
+    local valid = false
+    for _, preset in ipairs(BOX_SCALE_PRESETS) do
+        if preset == percent then valid = true; break end
     end
-    if not validScale then return false end
+    if not valid then return false end
 
     RaidBingoDB = RaidBingoDB or {}
-    RaidBingoDB.windowScale = percent
-    if self.mainFrame then self.mainFrame:SetScale(percent / 100) end
-    if self.scaleButton then self.scaleButton:SetText(percent .. "%") end
+    RaidBingoDB.boxScale = percent
+    if self.boxScaleSelector then
+        UIDropDownMenu_SetSelectedValue(self.boxScaleSelector, percent)
+        UIDropDownMenu_SetText(self.boxScaleSelector, "Boxes: " .. percent .. "%")
+    end
+    if self.mainFrame then
+        self:UpdateGridLayout()
+        self:UpdateCard()
+    end
     return true
 end
 
-function addon:CycleWindowScale()
-    RaidBingoDB = RaidBingoDB or {}
-    local current = RaidBingoDB.windowScale or 100
-    for index, preset in ipairs(WINDOW_SCALE_PRESETS) do
-        if preset == current then
-            self:SetWindowScale(WINDOW_SCALE_PRESETS[index % #WINDOW_SCALE_PRESETS + 1])
-            return
-        end
+function addon:SetTextSize(pointSize)
+    local valid = false
+    for _, preset in ipairs(TEXT_SIZE_PRESETS) do
+        if preset == pointSize then valid = true; break end
     end
-    self:SetWindowScale(100)
+    if not valid then return false end
+
+    RaidBingoDB = RaidBingoDB or {}
+    RaidBingoDB.textSize = pointSize
+    if self.textSizeSelector then
+        UIDropDownMenu_SetSelectedValue(self.textSizeSelector, pointSize)
+        UIDropDownMenu_SetText(self.textSizeSelector, "Text: " .. pointSize .. " pt")
+    end
+    if self.mainFrame then self:UpdateCard() end
+    return true
+end
+
+function addon:UpdateGridLayout()
+    if not self.mainFrame or not self.gridButtons then return end
+    local scale = (RaidBingoDB and RaidBingoDB.boxScale or 100) / 100
+    local buttonWidth, buttonHeight = 100 * scale, 82 * scale
+    local gapX, gapY = 10 * scale, 8 * scale
+    local gridWidth = 5 * buttonWidth + 4 * gapX
+    local gridHeight = 5 * buttonHeight + 4 * gapY
+    local frameWidth = math.max(620, gridWidth + 80)
+    local frameHeight = math.max(650, gridHeight + 220)
+    self.mainFrame:SetSize(frameWidth, frameHeight)
+
+    local startX = (frameWidth - gridWidth) / 2
+    local topOffset = (frameHeight - gridHeight) / 2
+    local inset = 4 * scale
+    for index, button in ipairs(self.gridButtons) do
+        local row = math.floor((index - 1) / 5)
+        local col = (index - 1) % 5
+        button:SetSize(buttonWidth, buttonHeight)
+        button:ClearAllPoints()
+        button:SetPoint("TOPLEFT", self.mainFrame, "TOPLEFT", startX + col * (buttonWidth + gapX), -topOffset - row * (buttonHeight + gapY))
+
+        button.markOverlay:ClearAllPoints()
+        button.markOverlay:SetPoint("TOPLEFT", button, "TOPLEFT", inset, -inset)
+        button.markOverlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -inset, inset)
+        button.text:ClearAllPoints()
+        button.text:SetPoint("CENTER", button, "CENTER")
+        button.text:SetSize(buttonWidth - 8 * scale, buttonHeight - 8 * scale)
+    end
+end
+
+local function InitializeValueDropdown(dropdown, options, labelPrefix, unit, onSelect)
+    UIDropDownMenu_SetWidth(dropdown, 105)
+    UIDropDownMenu_Initialize(dropdown, function(_, level)
+        for _, value in ipairs(options) do
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = labelPrefix .. value .. unit
+            info.value = value
+            info.func = function()
+                onSelect(value)
+                CloseDropDownMenus()
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
 end
 
 -- Create and manage the main UI frame
@@ -105,14 +161,8 @@ function addon:CreateUI()
     title:SetPoint("TOP", 0, -10)
     title:SetText("Hello There Raid Bingo!")
 
-    local scaleButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    scaleButton:SetSize(58, 22)
-    scaleButton:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -17)
-    scaleButton:SetScript("OnClick", function() addon:CycleWindowScale() end)
-    self.scaleButton = scaleButton
-
     local deckSelector = CreateFrame("Frame", "RaidBingoDeckSelector", frame, "UIDropDownMenuTemplate")
-    deckSelector:SetPoint("TOP", frame, "TOP", 0, -28)
+    deckSelector:SetPoint("TOP", frame, "TOP", 0, -29)
     UIDropDownMenu_SetWidth(deckSelector, 170)
     local deckOptions = {
         { label = "Raid Generic", value = "raid_generic" },
@@ -145,18 +195,44 @@ function addon:CreateUI()
         end
     end
 
+    local boxScaleSelector = CreateFrame("Frame", "RaidBingoBoxScaleSelector", frame, "UIDropDownMenuTemplate")
+    boxScaleSelector:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -58)
+    InitializeValueDropdown(boxScaleSelector, BOX_SCALE_PRESETS, "Boxes: ", "%", function(value)
+        addon:SetBoxScale(value)
+    end)
+    self.boxScaleSelector = boxScaleSelector
+
+    local textSizeSelector = CreateFrame("Frame", "RaidBingoTextSizeSelector", frame, "UIDropDownMenuTemplate")
+    textSizeSelector:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -58)
+    InitializeValueDropdown(textSizeSelector, TEXT_SIZE_PRESETS, "Text: ", " pt", function(value)
+        addon:SetTextSize(value)
+    end)
+    self.textSizeSelector = textSizeSelector
+
+    local autoMark = CreateFrame("CheckButton", "RaidBingoAutoMarkCheckbox", frame, "UICheckButtonTemplate")
+    autoMark:SetPoint("TOP", frame, "TOP", 0, -61)
+    local autoMarkLabel = autoMark:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    autoMarkLabel:SetPoint("LEFT", autoMark, "RIGHT", 1, 0)
+    autoMarkLabel:SetText("Automark based on events")
+    autoMark:SetHitRectInsets(0, -155, 0, 0)
+    autoMark:SetScript("OnEnter", function(button)
+        GameTooltip:SetOwner(button, "ANCHOR_TOP")
+        GameTooltip:SetText("Only squares with a verified spell ID can be marked automatically.")
+        GameTooltip:AddLine("Other squares stay manual. Combat log matching is opt-in.", 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    autoMark:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    autoMark:SetScript("OnClick", function(button)
+        addon:SetAutoMarkEnabled(button:GetChecked())
+    end)
+    self.autoMarkCheckbox = autoMark
+
     -- Create the grid of buttons (5x5)
     self.gridButtons = {}
     for i = 1, 25 do
         local buttonIndex = i
         local button = CreateFrame("Button", "RaidBingoButton" .. buttonIndex, frame, "UIPanelButtonTemplate")
         button:SetSize(100, 82)
-
-        -- Position buttons in a grid
-        local row = math.floor((i - 1) / 5)
-        local col = (i - 1) % 5
-
-        button:SetPoint("TOPLEFT", frame, "TOPLEFT", 40 + col * 110, -104 - row * 90)
 
         local markOverlay = button:CreateTexture(nil, "OVERLAY")
         -- Leave the button's own border visible when the green fill is shown.
@@ -201,17 +277,48 @@ function addon:CreateUI()
 
     -- Store reference to the main frame
     self.mainFrame = frame
-    if not self:SetWindowScale(RaidBingoDB and RaidBingoDB.windowScale or 100) then
-        self:SetWindowScale(100)
-    end
+    RaidBingoDB = RaidBingoDB or {}
+    self:SetBoxScale(RaidBingoDB.boxScale or 100)
+    self:SetTextSize(RaidBingoDB.textSize or 7)
+    autoMark:SetChecked(RaidBingoDB.autoMarkEvents == true)
+    self:UpdateGridLayout()
 
     local footer = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     footer:SetPoint("BOTTOM", frame, "BOTTOM", 0, 16)
-    footer:SetText("Click a square to mark it   |   /rb new for another card")
+    footer:SetText("Click squares to mark   |   Green marks can also follow matched combat events")
 
     -- Initially hide the frame, then populate it with the saved or selected deck.
     frame:Hide()
     self:GenerateAndDisplayCard()
+end
+
+-- Create a standard minimap launcher that toggles the bingo window.
+function addon:CreateMinimapButton()
+    if self.minimapButton or not Minimap then return end
+    local button = CreateFrame("Button", "RaidBingoMinimapButton", Minimap)
+    button:SetSize(32, 32)
+    button:SetFrameStrata("MEDIUM")
+    button:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 0, 0)
+    button:SetMovable(true)
+    button:RegisterForClicks("LeftButtonUp")
+    button:SetScript("OnClick", function() addon:ToggleUI() end)
+    button:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetText("Hello There Raid Bingo!")
+        GameTooltip:AddLine("Click to show or hide your card", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    local icon = button:CreateTexture(nil, "BACKGROUND")
+    icon:SetTexture("Interface\\Icons\\INV_Misc_Map_01")
+    icon:SetSize(20, 20)
+    icon:SetPoint("CENTER")
+    local border = button:CreateTexture(nil, "OVERLAY")
+    border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
+    border:SetSize(54, 54)
+    border:SetPoint("TOPLEFT")
+    button.icon = icon
+    self.minimapButton = button
 end
 
 -- Update button state (marked or not marked)

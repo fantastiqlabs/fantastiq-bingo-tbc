@@ -1,19 +1,12 @@
-# WIP checkpoint
+# Work in progress
 
-This is an early, resumable draft on `overnight/raid-bingo-planning-and-mvp`, not a release-ready addon.
+The current published prerelease is `v0.1.0-rc.6`. The active candidate worktree adds separate box-size and actual point-size selectors, a minimap toggle, and an opt-in combat-log matcher.
 
-## Present in this checkpoint
+## Current implementation notes
 
-- Draft planning notes for issues 1–6.
-- A basic Lua addon scaffold, TOC, fixed 25-square example card, and initial UI.
-
-## Known gaps for the next pass
-
-- The draft incorrectly identifies WoW 1.12.1 / Interface 11201 as TBC. Confirm and document the exact supported TBC client and APIs before relying on them.
-- Replace the fixed generic card with a large curated catalog, randomized cards without duplicate squares, and selectable Black Temple, Mount Hyjal, SSC, and Tempest Keep / Kael'thas decks. Include the owner's Illidan blue-flame example as self-reported content.
-- Polish the in-game interface to match the selected TBC client's native addon conventions.
-- Implement and verify actual line detection, mark correction, saved state, and raid/card lifecycle; current utility code contains placeholders.
-- Complete planning issue 7 and keep GitHub issues current. Do not claim external guild review has happened.
-- No automated tests or in-client checks have been run.
-
-The owner authorized this WIP checkpoint to be committed and pushed so later work can resume from the feature branch.
+- Box presets are 80%, 100%, and 120%; text presets are 5–10 pt and long labels shrink further to fit.
+- Minimap icon toggles the main card.
+- The **Automark based on events** checkbox listens for `COMBAT_LOG_EVENT_UNFILTERED` only while enabled. It matches exact spell IDs declared on catalog squares (`autoMark` metadata) and leaves every other square manual.
+- No catalog squares currently have verified `autoMark` spell-ID rules. The feature plumbing is ready, but automatic marking will not happen until rules are validated in the Anniversary client.
+- `/eventtrace` is useful as a diagnostic while investigating client events; addon code cannot query its displayed event history. A TBC-compatible combat-log viewer confirms that `CombatLogGetCurrentEventInfo()` is used for TBC combat-log inspection.
+- The candidate has not been tested inside WoW. Verify selectors, minimap click, checkbox persistence, a known event rule, label fitting, and no Lua errors before treating it as ready for group play.
