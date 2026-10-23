@@ -340,28 +340,77 @@ function addon:UpdateUI()
     if self.UpdateCard then self:UpdateCard() end
 end
 
--- Event rules live on individual catalog squares. We deliberately do not infer
--- matches from the English display text: only explicitly curated IDs qualify.
-local function RuleMatches(rule, subevent, sourceGUID, destGUID, spellId)
-    if type(rule) ~= "table" then return false end
-    -- Require a spell ID so a broad subevent such as SPELL_DAMAGE cannot mark
-    -- unrelated squares just because any raid damage occurred.
-    if not rule.spellId then return false end
-    if rule.subevent and rule.subevent ~= subevent then return false end
-    if rule.spellId ~= spellId then return false end
-    if rule.sourceGUID and rule.sourceGUID ~= sourceGUID then return false end
-    if rule.target == "player" and destGUID ~= UnitGUID("player") then return false end
-    if rule.target == "raid" then
-        local isRaidMember = destGUID == UnitGUID("player")
-        if not isRaidMember and UnitInRaid then
-            for index = 1, 40 do
-                local unit = "raid" .. index
-                if UnitExists(unit) and UnitGUID(unit) == destGUID then isRaidMember = true; break end
-            end
-        end
-        if not isRaidMember then return false end
+local function NormalizeEventText(value)
+    return string.lower((value or ""):gsub("[^%w%s]", ""):gsub("%s+", " "):match("^%s*(.-)%s*$"))
+end
+
+local function ContainsEventPhrase(value, phrase)
+    local haystack, needle = NormalizeEventText(value), NormalizeEventText(phrase)
+    return needle ~= "" and haystack:find(needle, 1, true) ~= nil
+end
+
+local function GetNamedDeathTarget(square)
+    if type(square) ~= "table" or type(square.text) ~= "string" then return nil end
+    local target
+    if square.category == "boss" then
+        target = square.text:match("^[Dd]efeat%s+(.+)$")
+    elseif square.category == "mob" then
+        target = square.text:match("^[Kk]ill%s+[Aa]n?%s+(.+)$")
     end
-    return true
+    if not target then return nil end
+    local normalized = NormalizeEventText(target)
+    if normalized == "" or normalized:find("boss", 1, true)
+        or normalized:find("specific", 1, true) or normalized:find("certain number", 1, true)
+        or normalized:find("named mob", 1, true) or normalized:find("mob type", 1, true) then
+        return nil
+    end
+    return target
+end
+
+local function ParseHitSquare(text)
+    if type(text) ~= "string" then return nil, nil end
+    local remainder = text:match("^[Gg]et hit by%s+(.+)$")
+    if not remainder then return nil, nil end
+    local splitAt = remainder:find("'s%s+") or remainder:find("’s%s+")
+    if not splitAt then return nil, nil end
+    local source = remainder:sub(1, splitAt - 1):gsub("^[Aa]%s+", ""):gsub("^[Tt]he%s+", "")
+    local ability = remainder:sub(splitAt):gsub("^'s%s+", ""):gsub("^’s%s+", "")
+    return source, ability
+end
+
+local function IsHitSubevent(subevent)
+    return subevent == "SPELL_DAMAGE" or subevent == "SPELL_PERIODIC_DAMAGE"
+        or subevent == "SPELL_AURA_APPLIED"
+end
+
+local function SquareMatchesCombatEvent(square, subevent, sourceName, destName, destGUID, spellId, spellName)
+    if type(square) ~= "table" then return false end
+
+    -- Named boss defeats and mob kills are inferred from the death's destination
+    -- name; generic boxes intentionally do not match arbitrary deaths.
+    local deathTarget = GetNamedDeathTarget(square)
+    if deathTarget and (subevent == "UNIT_DIED" or subevent == "PARTY_KILL")
+        and ContainsEventPhrase(destName, deathTarget) then
+        return true
+    end
+
+    if not IsHitSubevent(subevent) or destGUID ~= UnitGUID("player") then return false end
+
+    -- The owner's Illidan blue-flame square maps to the ground-flame damage
+    -- spell. The box text and mechanic are maintained together in its catalog entry.
+    local rule = square.autoMark
+    if type(rule) == "table" and rule.spellIds then
+        for _, supportedSpellId in ipairs(rule.spellIds) do
+            if spellId == supportedSpellId then return true end
+        end
+    end
+
+    -- For explicit “Get hit by <creature>'s <spell>” boxes, match both the
+    -- combat-log source and spell name against the displayed square wording.
+    local sourceTerm, abilityTerm = ParseHitSquare(square.text)
+    return sourceTerm ~= nil and abilityTerm ~= nil
+        and ContainsEventPhrase(sourceName, sourceTerm)
+        and ContainsEventPhrase(spellName, abilityTerm)
 end
 
 function addon:SetAutoMarkEnabled(enabled)
@@ -373,32 +422,33 @@ function addon:SetAutoMarkEnabled(enabled)
     if eventFrame then
         if RaidBingoDB.autoMarkEvents then
             eventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+            eventFrame:RegisterEvent("CHAT_MSG_RAID")
+            eventFrame:RegisterEvent("CHAT_MSG_RAID_LEADER")
+            eventFrame:RegisterEvent("CHAT_MSG_RAID_WARNING")
+            eventFrame:RegisterEvent("CHAT_MSG_PARTY")
+            eventFrame:RegisterEvent("CHAT_MSG_PARTY_LEADER")
+            eventFrame:RegisterEvent("CHAT_MSG_SAY")
+            eventFrame:RegisterEvent("CHAT_MSG_YELL")
         else
             eventFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-        end
-    end
-    if RaidBingoDB.autoMarkEvents then
-        local ruleCount = 0
-        for _, square in ipairs((self:GetCardData() or {}).squares or {}) do
-            if type(square) == "table" and type(square.autoMark) == "table" and square.autoMark.spellId then
-                ruleCount = ruleCount + 1
-            end
-        end
-        if ruleCount == 0 then
-            print("Raid Bingo: this card has no verified event rules yet; squares remain manual.")
+            eventFrame:UnregisterEvent("CHAT_MSG_RAID")
+            eventFrame:UnregisterEvent("CHAT_MSG_RAID_LEADER")
+            eventFrame:UnregisterEvent("CHAT_MSG_RAID_WARNING")
+            eventFrame:UnregisterEvent("CHAT_MSG_PARTY")
+            eventFrame:UnregisterEvent("CHAT_MSG_PARTY_LEADER")
+            eventFrame:UnregisterEvent("CHAT_MSG_SAY")
+            eventFrame:UnregisterEvent("CHAT_MSG_YELL")
         end
     end
 end
 
-function addon:OnCombatLogEvent()
-    if not RaidBingoDB or not RaidBingoDB.autoMarkEvents or not CombatLogGetCurrentEventInfo then return end
-    local _, subevent, _, sourceGUID, _, _, _, destGUID, _, _, _, spellId = CombatLogGetCurrentEventInfo()
+function addon:AutoMarkMatchingSquares(matcher)
+    if not RaidBingoDB or not RaidBingoDB.autoMarkEvents then return end
     local squares = self:GetCardData().squares or {}
     local marks = self:GetPlayerMarks()
     local changed = false
     for index, square in ipairs(squares) do
-        if index ~= 13 and not marks[index] and type(square) == "table"
-            and RuleMatches(square.autoMark, subevent, sourceGUID, destGUID, spellId) then
+        if index ~= 13 and not marks[index] and matcher(square) then
             marks[index] = true
             changed = true
         end
@@ -408,6 +458,25 @@ function addon:OnCombatLogEvent()
         self:UpdateCard()
         self:CheckForCompletedLines()
     end
+end
+
+function addon:OnCombatLogEvent()
+    if not RaidBingoDB or not RaidBingoDB.autoMarkEvents or not CombatLogGetCurrentEventInfo then return end
+    if not (UnitInRaid and UnitInRaid("player")) then return end
+    local _, subevent, _, _, sourceName, _, _, destGUID, destName, _, _, spellId, spellName = CombatLogGetCurrentEventInfo()
+    self:AutoMarkMatchingSquares(function(square)
+        return SquareMatchesCombatEvent(square, subevent, sourceName, destName, destGUID, spellId, spellName)
+    end)
+end
+
+function addon:OnChatEvent(message)
+    if not RaidBingoDB or not RaidBingoDB.autoMarkEvents or not (UnitInRaid and UnitInRaid("player")) then return end
+    if type(message) ~= "string" then return end
+    self:AutoMarkMatchingSquares(function(square)
+        if type(square) ~= "table" or type(square.text) ~= "string" then return false end
+        local quotedPhrase = square.text:match("['\"]([^'\"]+)['\"]")
+        return quotedPhrase ~= nil and ContainsEventPhrase(message, quotedPhrase)
+    end)
 end
 
 -- Slash commands remain available alongside the visible deck dropdown.
@@ -448,11 +517,14 @@ end;
 -- The addon namespace is a table, not a Frame. Use one real frame for initialization.
 eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("ADDON_LOADED")
-eventFrame:SetScript("OnEvent", function(_, event, loadedAddon)
-    if event == "ADDON_LOADED" and loadedAddon == addonName then
+eventFrame:SetScript("OnEvent", function(_, event, ...)
+    local firstArg = ...
+    if event == "ADDON_LOADED" and firstArg == addonName then
         addon:OnEnable()
     elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
         addon:OnCombatLogEvent()
+    elseif event:match("^CHAT_MSG_") then
+        addon:OnChatEvent(firstArg)
     end
 end)
 

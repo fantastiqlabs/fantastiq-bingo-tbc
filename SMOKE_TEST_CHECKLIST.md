@@ -18,6 +18,9 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] The Boxes dropdown selects 80%, 100%, and 120%; the Text dropdown selects 5–10 pt and long labels still fit.
 - [ ] The minimap button toggles the card without Lua errors.
 - [ ] The saved **Automark based on events** checkbox persists; `/rb automark` toggles it too.
+- [ ] With automark enabled during a raid, defeating a boss or killing a named mob on the current card marks the matching square.
+- [ ] Taking a listed spell/mechanic hit marks its matching square; an unrelated hit does not mark it.
+- [ ] Saying a quoted phrase from a card square in raid/party chat marks that square.
 - [ ] `/rb generic` selects the raid-neutral pool; its squares do not name raids or bosses.
 - [ ] Raid-specific cards contain a random 2–8 squares for that raid and generic moments in the remaining spaces.
 - [ ] The center says FREE and appears marked green.
@@ -28,16 +31,18 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 
 - [ ] Long square labels wrap and scale down while keeping visible padding inside their cells.
 - [ ] The larger 5×5 grid is centered in the window and labels remain fully visible.
-- [ ] Clicking a square changes only its red interior fill to green; clicking it again restores red.
-- [ ] The original Blizzard button frame and text remain unchanged and clearly visible in both marked and unmarked states.
+- [ ] Clicking a square changes only its red backdrop to pastel green; clicking it again restores red.
+- [ ] The separate frame remains visible and the text color stays the same in both marked and unmarked states.
+- [ ] The Automark based on events checkbox and label are centered together above the card.
 - [ ] The center cell matches the other cell dimensions, stays green, and centers `FREE`.
 - [ ] Marks remain after reloading the UI or relogging with the same card.
 - [ ] Completing a horizontal or vertical line yells `BINGO!!!!!!!!!` with one randomly selected Monkey Island-themed quip.
+- [ ] The addon performs `/laugh` after the yell.
 - [ ] A card yells only once; a new card can announce again.
 
 ## Report
 
 - [ ] No Lua or UI errors during deck changes, marking, reset, or reload.
 - [ ] Record the client build, steps, and exact errors or unexpected results.
-- [ ] Confirm that squares without explicit verified spell-ID rules remain manual; no broad combat event marks unrelated squares.
-- [ ] Use `/eventtrace` and combat-log data during client testing before adding a square's event rule. Note that `/eventtrace` is diagnostic and its history is not directly readable by the addon.
+- [ ] Confirm subjective squares without a matching observable event remain manual, and unrelated combat events do not mark squares.
+- [ ] `/eventtrace` is diagnostic; combat-log events provide the data the addon matches.

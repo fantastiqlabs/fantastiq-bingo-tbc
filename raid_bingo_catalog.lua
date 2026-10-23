@@ -7,7 +7,7 @@ RaidBingoCatalog = {
     -- Black Temple
     black_temple = {
         { id = "bt_001", text = "Defeat Illidan Stormrage", category = "boss", raid = "Black Temple" },
-        { id = "bt_002", text = "Get hit by Illidan's blue flame", category = "mechanic", raid = "Black Temple" },
+        { id = "bt_002", text = "Get hit by Illidan's blue flame", category = "mechanic", raid = "Black Temple", autoMark = { spellIds = { 40836 } } },
         { id = "bt_003", text = "Kill a Shadowmoon Voidwalker", category = "mob", raid = "Black Temple" },
         { id = "bt_004", text = "Kill a Sunfury Bloodwarder", category = "mob", raid = "Black Temple" },
         { id = "bt_005", text = "Get hit by a Shadowmoon Voidwalker's Shadow Bolt", category = "mechanic", raid = "Black Temple" },
@@ -170,7 +170,7 @@ RaidBingoCatalog = {
 
     -- Funny/recognizable events
     funny = {
-        { id = "funny_001", text = "Get hit by Illidan's blue flame", category = "mechanic", type = "boss_ability" },
+        { id = "funny_001", text = "Get hit by Illidan's blue flame", category = "mechanic", type = "boss_ability", autoMark = { spellIds = { 40836 } } },
         { id = "funny_002", text = "Spend 5 minutes in a raid", category = "time", type = "duration" },
         { id = "funny_003", text = "Get a critical hit during raid", category = "critical", type = "critical_hit" },
         { id = "funny_004", text = "Use a consumable during raid", category = "consumable", type = "use_consumable" },

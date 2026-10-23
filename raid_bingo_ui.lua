@@ -6,15 +6,15 @@ local addonName, addon = ...
 local BOX_SCALE_PRESETS = { 80, 100, 120 }
 local TEXT_SIZE_PRESETS = { 5, 6, 7, 8, 9, 10 }
 
--- Keep the original Blizzard button art. The marked fill is inset far enough
--- that it only covers the button's interior and cannot obscure its frame.
+local CELL_UNMARKED_COLOR = { 0.84, 0.48, 0.48, 1 }
+local CELL_MARKED_COLOR = { 0.58, 0.82, 0.58, 1 }
+
+-- Color the button's backdrop directly. The fill and border are separate
+-- regions, so changing state cannot paint across the frame.
 local function SetButtonMarked(button, isMarked)
-    if button.markFill then
-        if isMarked then
-            button.markFill:Show()
-        else
-            button.markFill:Hide()
-        end
+    if button.SetBackdropColor then
+        local color = isMarked and CELL_MARKED_COLOR or CELL_UNMARKED_COLOR
+        button:SetBackdropColor(color[1], color[2], color[3], color[4])
     end
 end
 
@@ -88,7 +88,6 @@ function addon:UpdateGridLayout()
 
     local startX = (frameWidth - gridWidth) / 2
     local topOffset = (frameHeight - gridHeight) / 2
-    local inset = 8 * scale
     for index, button in ipairs(self.gridButtons) do
         local row = math.floor((index - 1) / 5)
         local col = (index - 1) % 5
@@ -96,9 +95,6 @@ function addon:UpdateGridLayout()
         button:ClearAllPoints()
         button:SetPoint("TOPLEFT", self.mainFrame, "TOPLEFT", startX + col * (buttonWidth + gapX), -topOffset - row * (buttonHeight + gapY))
 
-        button.markFill:ClearAllPoints()
-        button.markFill:SetPoint("TOPLEFT", button, "TOPLEFT", inset, -inset)
-        button.markFill:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -inset, inset)
         button.text:ClearAllPoints()
         button.text:SetPoint("CENTER", button, "CENTER")
         button.text:SetSize(buttonWidth - 8 * scale, buttonHeight - 8 * scale)
@@ -202,15 +198,17 @@ function addon:CreateUI()
     self.textSizeSelector = textSizeSelector
 
     local autoMark = CreateFrame("CheckButton", "RaidBingoAutoMarkCheckbox", frame, "UICheckButtonTemplate")
-    autoMark:SetPoint("TOP", frame, "TOP", 0, -61)
+    autoMark:SetSize(24, 24)
+    autoMark:SetPoint("TOPLEFT", frame, "TOP", -95, -61)
     local autoMarkLabel = autoMark:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     autoMarkLabel:SetPoint("LEFT", autoMark, "RIGHT", 1, 0)
+    autoMarkLabel:SetSize(166, 24)
     autoMarkLabel:SetText("Automark based on events")
-    autoMark:SetHitRectInsets(0, -155, 0, 0)
+    autoMark:SetHitRectInsets(0, -166, 0, 0)
     autoMark:SetScript("OnEnter", function(button)
         GameTooltip:SetOwner(button, "ANCHOR_TOP")
-        GameTooltip:SetText("Only squares with a verified spell ID can be marked automatically.")
-        GameTooltip:AddLine("Other squares stay manual. Combat log matching is opt-in.", 1, 1, 1, true)
+        GameTooltip:SetText("Match raid events to this card")
+        GameTooltip:AddLine("Boss defeats, named mob kills, and matching mechanic hits can mark squares. Social moments stay manual.", 1, 1, 1, true)
         GameTooltip:Show()
     end)
     autoMark:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -223,15 +221,17 @@ function addon:CreateUI()
     self.gridButtons = {}
     for i = 1, 25 do
         local buttonIndex = i
-        local button = CreateFrame("Button", "RaidBingoButton" .. buttonIndex, frame, "UIPanelButtonTemplate")
+        local button = CreateFrame("Button", "RaidBingoButton" .. buttonIndex, frame, "BackdropTemplate")
         button:SetSize(100, 82)
-
-        local markFill = button:CreateTexture(nil, "OVERLAY")
-        markFill:SetPoint("TOPLEFT", button, "TOPLEFT", 8, -8)
-        markFill:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -8, 8)
-        markFill:SetColorTexture(0, 0.85, 0.1, 1)
-        markFill:Hide()
-        button.markFill = markFill
+        button:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8X8",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = false,
+            edgeSize = 12,
+            insets = { left = 3, right = 3, top = 3, bottom = 3 }
+        })
+        button:SetBackdropBorderColor(1, 1, 1, 1)
+        button:SetBackdropColor(CELL_UNMARKED_COLOR[1], CELL_UNMARKED_COLOR[2], CELL_UNMARKED_COLOR[3], CELL_UNMARKED_COLOR[4])
 
         -- Set up the button click handler
         button:SetScript("OnClick", function()
@@ -248,6 +248,7 @@ function addon:CreateUI()
         buttonText:SetDrawLayer("OVERLAY", 1)
         buttonText:SetJustifyH("CENTER")
         buttonText:SetJustifyV("MIDDLE")
+        buttonText:SetTextColor(0.12, 0.12, 0.12, 1)
         buttonText:SetWordWrap(true)
         if buttonText.SetNonSpaceWrap then buttonText:SetNonSpaceWrap(true) end
         buttonText:SetText("")
@@ -423,6 +424,7 @@ function addon:CheckForCompletedLines()
         self.bingoAnnounced = true
         RaidBingoDB.bingoAnnounced = true
         SendChatMessage("BINGO!!!!!!!!! " .. quotes[math.random(#quotes)], "YELL")
+        DoEmote("LAUGH")
     end
 end
 
