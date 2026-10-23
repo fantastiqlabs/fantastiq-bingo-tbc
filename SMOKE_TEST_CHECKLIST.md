@@ -15,6 +15,7 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] Each dropdown choice shows a new 5×5 card.
 - [ ] `/rb za` selects Zul'Aman and shows Zul'Aman squares.
 - [ ] `/rb generic` selects the raid-neutral pool; its squares do not name raids or bosses.
+- [ ] Raid-specific cards contain both that raid's encounter squares and raid-generic moments.
 - [ ] The center says FREE and appears marked green.
 - [ ] No card contains duplicate squares; shorter raid pools can include generic squares.
 - [ ] `/rb new` creates another card; `/rb reset` clears marks.

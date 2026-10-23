@@ -27,8 +27,8 @@ function addon:OnEnable()
     print("|cFF00FF00Raid Bingo Addon loaded. Marks are self-reported and private.|r")
 end
 
--- Generate a complete card without duplicate squares. Short raid pools are topped up
--- from the raid-generic pool; the generic deck itself never includes raid-specific text.
+-- Generate a no-duplicate card. Raid-specific decks mix up to 16 raid squares
+-- with generic moments; the dedicated generic deck stays raid-neutral.
 function addon:GenerateCardFromCatalog(deckName)
     local deck = RaidBingoCatalog and RaidBingoCatalog[deckName]
     if type(deck) ~= "table" then
@@ -40,21 +40,59 @@ function addon:GenerateCardFromCatalog(deckName)
         return self:GetDefaultCard()
     end
 
-    local pool = {}
-    local seenIds, seenText = {}, {}
-    local function addSquares(source)
+    local function collectUniqueSquares(source, seenIds, seenText)
+        seenIds = seenIds or {}
+        seenText = seenText or {}
+        local squares = {}
         for _, square in ipairs(source or {}) do
             local textKey = square and square.text and string.lower(square.text)
             if square and square.id and textKey and not seenIds[square.id] and not seenText[textKey] then
                 seenIds[square.id] = true
                 seenText[textKey] = true
-                table.insert(pool, square)
+                table.insert(squares, square)
             end
         end
+        return squares
     end
-    addSquares(deck)
-    if #pool < 24 and deckName ~= "raid_generic" then
-        addSquares(RaidBingoCatalog.raid_generic)
+
+    local pool = {}
+    if deckName == "raid_generic" then
+        pool = collectUniqueSquares(deck)
+    else
+        -- Keep raid cards recognizable while including the shared raid moments:
+        -- aim for 16 raid squares and 8 generic squares in the 24-cell draw.
+        local raidPool = collectUniqueSquares(deck)
+        self:ShuffleTable(raidPool)
+        local seenIds, seenText = {}, {}
+        local specificCount = math.min(16, #raidPool)
+        for i = 1, specificCount do
+            local square = raidPool[i]
+            table.insert(pool, square)
+            seenIds[square.id] = true
+            seenText[string.lower(square.text)] = true
+        end
+
+        local genericPool = collectUniqueSquares(RaidBingoCatalog.raid_generic, seenIds, seenText)
+        self:ShuffleTable(genericPool)
+        for _, square in ipairs(genericPool) do
+            if #pool >= 24 then break end
+            table.insert(pool, square)
+        end
+
+        -- If the generic catalog is ever too small, fill remaining spaces with
+        -- unused raid squares while still preventing duplicate IDs and text.
+        if #pool < 24 then
+            for i = specificCount + 1, #raidPool do
+                local square = raidPool[i]
+                local textKey = string.lower(square.text)
+                if not seenIds[square.id] and not seenText[textKey] then
+                    table.insert(pool, square)
+                    seenIds[square.id] = true
+                    seenText[textKey] = true
+                    if #pool >= 24 then break end
+                end
+            end
+        end
     end
     if #pool < 24 then
         print("This deck does not contain enough unique squares to make a full card.")
