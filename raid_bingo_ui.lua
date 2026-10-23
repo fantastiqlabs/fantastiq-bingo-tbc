@@ -5,6 +5,7 @@
 local addonName, addon = ...
 local BOX_SCALE_PRESETS = { 80, 100, 120 }
 local TEXT_SIZE_PRESETS = { 5, 6, 7, 8, 9, 10 }
+local WINDOW_SCALE_PRESETS = { 75, 100, 125, 150 }
 
 local CELL_UNMARKED_COLOR = { 0.84, 0.48, 0.48, 1 }
 local CELL_MARKED_COLOR = { 0.58, 0.82, 0.58, 1 }
@@ -75,6 +76,23 @@ function addon:SetTextSize(pointSize)
     return true
 end
 
+function addon:SetWindowScale(percent)
+    local valid = false
+    for _, preset in ipairs(WINDOW_SCALE_PRESETS) do
+        if preset == percent then valid = true; break end
+    end
+    if not valid then return false end
+
+    RaidBingoDB = RaidBingoDB or {}
+    RaidBingoDB.windowScale = percent
+    if self.windowScaleSelector then
+        UIDropDownMenu_SetSelectedValue(self.windowScaleSelector, percent)
+        UIDropDownMenu_SetText(self.windowScaleSelector, "Window: " .. percent .. "%")
+    end
+    if self.mainFrame then self.mainFrame:SetScale(percent / 100) end
+    return true
+end
+
 function addon:UpdateGridLayout()
     if not self.mainFrame or not self.gridButtons then return end
     local scale = (RaidBingoDB and RaidBingoDB.boxScale or 100) / 100
@@ -82,12 +100,14 @@ function addon:UpdateGridLayout()
     local gapX, gapY = 10 * scale, 8 * scale
     local gridWidth = 5 * buttonWidth + 4 * gapX
     local gridHeight = 5 * buttonHeight + 4 * gapY
-    local frameWidth = math.max(620, gridWidth + 80)
-    local frameHeight = math.max(650, gridHeight + 220)
+    -- Keep enough width for the three selectors while trimming the empty
+    -- margins around the grid. Height follows the chosen box size directly.
+    local frameWidth = math.max(620, gridWidth + 60)
+    local frameHeight = gridHeight + 190
     self.mainFrame:SetSize(frameWidth, frameHeight)
 
     local startX = (frameWidth - gridWidth) / 2
-    local topOffset = (frameHeight - gridHeight) / 2
+    local topOffset = 120
     for index, button in ipairs(self.gridButtons) do
         local row = math.floor((index - 1) / 5)
         local col = (index - 1) % 5
@@ -191,15 +211,22 @@ function addon:CreateUI()
     self.boxScaleSelector = boxScaleSelector
 
     local textSizeSelector = CreateFrame("Frame", "RaidBingoTextSizeSelector", frame, "UIDropDownMenuTemplate")
-    textSizeSelector:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -58)
+    textSizeSelector:SetPoint("TOP", frame, "TOP", 0, -58)
     InitializeValueDropdown(textSizeSelector, TEXT_SIZE_PRESETS, "Text: ", " pt", function(value)
         addon:SetTextSize(value)
     end)
     self.textSizeSelector = textSizeSelector
 
+    local windowScaleSelector = CreateFrame("Frame", "RaidBingoWindowScaleSelector", frame, "UIDropDownMenuTemplate")
+    windowScaleSelector:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -58)
+    InitializeValueDropdown(windowScaleSelector, WINDOW_SCALE_PRESETS, "Window: ", "%", function(value)
+        addon:SetWindowScale(value)
+    end)
+    self.windowScaleSelector = windowScaleSelector
+
     local autoMark = CreateFrame("CheckButton", "RaidBingoAutoMarkCheckbox", frame, "UICheckButtonTemplate")
     autoMark:SetSize(24, 24)
-    autoMark:SetPoint("TOPLEFT", frame, "TOP", -95, -61)
+    autoMark:SetPoint("TOPLEFT", frame, "TOP", -95, -88)
     local autoMarkLabel = autoMark:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     autoMarkLabel:SetPoint("LEFT", autoMark, "RIGHT", 1, 0)
     autoMarkLabel:SetSize(166, 24)
@@ -272,6 +299,7 @@ function addon:CreateUI()
     RaidBingoDB = RaidBingoDB or {}
     self:SetBoxScale(RaidBingoDB.boxScale or 100)
     self:SetTextSize(RaidBingoDB.textSize or 7)
+    self:SetWindowScale(RaidBingoDB.windowScale or 100)
     autoMark:SetChecked(RaidBingoDB.autoMarkEvents == true)
     self:UpdateGridLayout()
 

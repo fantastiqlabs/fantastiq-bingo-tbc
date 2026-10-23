@@ -6,7 +6,7 @@ A standalone World of Warcraft: The Burning Crusade Classic Anniversary raid bin
 
 The project has a modular Lua addon, a 5×5 card UI, a native deck selector, randomized no-duplicate pools, local square marking, and a free center square. Marking changes only the cell backdrop to pastel green; a separate border stays visible and text color is unchanged.
 
-Earlier prereleases fixed startup, label fitting, card generation, and the raid mix. RC.7 added independent box/text size menus and a minimap toggle. RC.8's inset green fill still touched the cell frame. RC.9 uses a separate cell backdrop and border, a softer green, a centered automark control, event matching against square wording, and a `/laugh` emote after the BINGO yell. RC.9 has not yet been client-tested.
+Earlier prereleases fixed startup, label fitting, card generation, and the raid mix. RC.7 added independent box/text size menus and a minimap toggle. RC.8's inset green fill still touched the cell frame. RC.9 uses a separate cell backdrop and border, a softer green, a centered automark control, event matching against square wording, and a `/laugh` emote after the BINGO yell. The RC.10 candidate tightens the frame around the grid and adds saved whole-window scaling. RC.10 has not yet been client-tested.
 
 The TOC targets interface `20506` (Burning Crusade Classic Anniversary 2.5.6 in current published client references). No in-game client verification has been performed. See [client target notes](RESEARCH_CLIENT_VERSION.md) and [smoke test checklist](SMOKE_TEST_CHECKLIST.md).
 
@@ -14,7 +14,7 @@ The TOC targets interface `20506` (Burning Crusade Classic Anniversary 2.5.6 in 
 
 - Decks can be selected from the in-game dropdown or with `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, and `/rb generic`.
 - Raid-specific cards randomly use 2–8 unique raid squares and fill the rest with generic moments. The Raid Generic deck contains only raid-neutral squares.
-- Use the Boxes dropdown (80%, 100%, 120%) and Text dropdown (5–10 pt) to adjust the card; both settings persist after reload. Text can shrink below the selected size to fit a long label.
+- Use the Boxes dropdown (80%, 100%, 120%), Text dropdown (5–10 pt), and Window dropdown (75%, 100%, 125%, 150%) to adjust the card. All three settings persist after reload. The frame height follows the grid size, with less empty space around the boxes. Text can shrink below the selected size to fit a long label.
 - Marking a cell directly changes its red backdrop to pastel green; the separate frame stays visible and the text color remains the same.
 - Click the minimap button to show or hide the card. `/rb` remains available.
 - The “Automark based on events” checkbox matches raid combat-log deaths to named boss/mob squares, player-hit combat events to explicit `Get hit by …` squares, and quoted phrases to matching group chat. `/rb automark` toggles it.

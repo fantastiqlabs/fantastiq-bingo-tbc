@@ -16,6 +16,8 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] Each dropdown choice shows a new 5×5 card.
 - [ ] `/rb za` selects Zul'Aman and shows Zul'Aman squares.
 - [ ] The Boxes dropdown selects 80%, 100%, and 120%; the Text dropdown selects 5–10 pt and long labels still fit.
+- [ ] The Window dropdown selects 75%, 100%, 125%, and 150%; scale stays within the screen and persists after reload.
+- [ ] Changing box size keeps the grid centered, reduces unused frame space, and does not clip selectors, checkbox, or card.
 - [ ] The minimap button toggles the card without Lua errors.
 - [ ] The saved **Automark based on events** checkbox persists; `/rb automark` toggles it too.
 - [ ] With automark enabled during a raid, defeating a boss or killing a named mob on the current card marks the matching square.
@@ -30,7 +32,7 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 ## Marking and bingo
 
 - [ ] Long square labels wrap and scale down while keeping visible padding inside their cells.
-- [ ] The larger 5×5 grid is centered in the window and labels remain fully visible.
+- [ ] The 5×5 grid is centered in a compact window with modest margins and labels remain fully visible at each window scale.
 - [ ] Clicking a square changes only its red backdrop to pastel green; clicking it again restores red.
 - [ ] The separate frame remains visible and the text color stays the same in both marked and unmarked states.
 - [ ] The Automark based on events checkbox and label are centered together above the card.

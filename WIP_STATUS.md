@@ -1,10 +1,10 @@
 # Work in progress
 
-The current published prerelease is `v0.1.0-rc.9`. The candidate separates cell backdrop color from the border, centers the automark control, matches observable raid events to card text, and laughs after bingo.
+The current published prerelease is `v0.1.0-rc.9`. The `v0.1.0-rc.10` candidate tightens the window around the grid and adds saved whole-window scaling (75%, 100%, 125%, 150%). It also retains the separate cell backdrop and border, centered automark control, observable raid-event matching, and `/laugh` after bingo. RC.10 has not been tested in the WoW client.
 
 ## Current implementation notes
 
-- Box presets are 80%, 100%, and 120%; text presets are 5–10 pt and long labels shrink further to fit.
+- Box presets are 80%, 100%, and 120%; text presets are 5–10 pt and long labels shrink further to fit. Whole-window scale presets are 75%, 100%, 125%, and 150%. The grid stays centered and frame height follows grid dimensions to reduce unused space.
 - Minimap icon toggles the main card.
 - The **Automark based on events** checkbox listens to combat log and chat events only while enabled and during a raid. It matches named boss/mob deaths, explicit player-hit mechanic text, and quoted phrases heard in group chat against squares on the current card.
 - The Illidan blue-flame square uses spell ID `40836`; text-driven matching handles other directly named hit squares when the combat log source and spell name match the card wording.

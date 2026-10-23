@@ -19,7 +19,7 @@
 
 - Type `/rb` or `/raidbingo` to show or hide the card.
 - Choose a deck from the dropdown, or use `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, or `/rb generic`.
-- Use the **Boxes** dropdown for 80%, 100%, or 120% cell sizes, and the **Text** dropdown for 5–10 pt text. Text can shrink further when needed to fit a long label. Both settings are saved.
+- Use the **Boxes** dropdown for 80%, 100%, or 120% cell sizes, the **Text** dropdown for 5–10 pt text, and the **Window** dropdown for 75%, 100%, 125%, or 150% overall scale. Text can shrink further when needed to fit a long label. All three settings are saved. The window now trims excess space around the grid and adjusts its height to the chosen cell size.
 - Click the minimap icon to show or hide the card. `/rb` and `/raidbingo` also toggle it.
 - Enable **Automark based on events** to match raid events against the current card: named boss defeats and mob kills from the combat log, player-hit events for explicit mechanic squares, and exact quoted phrases in group chat. You can also toggle the setting with `/rb automark`.
 - Click a square to mark it green; click it again to unmark it. The free center is automatic.
