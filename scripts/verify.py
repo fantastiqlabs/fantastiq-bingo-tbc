@@ -4,7 +4,7 @@
 Raid Bingo Addon Verification Script
 
 Verifies that a packaged addon archive contains exactly the expected files
-and structure for issue #10 packaging preparation.
+and structure for the addon release workflow.
 
 Uses Python standard library zipfile module, no external dependencies.
 """
@@ -118,7 +118,7 @@ def main():
         
         print("✓ Archive structure is clean and correct")
         print("\nVerification successful! The archive contains exactly the expected files.")
-        print("Note: This verification does not include in-game testing. In-game verification will be performed after issue #9 integration.")
+        print("Note: This verification does not include in-game testing. Archive validation does not replace in-game verification.")
 
 if __name__ == "__main__":
     main()

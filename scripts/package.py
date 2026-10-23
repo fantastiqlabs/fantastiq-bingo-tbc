@@ -3,7 +3,7 @@
 """
 Raid Bingo Addon Packaging Script
 
-Creates a versioned ZIP archive of the addon files for issue #10 packaging preparation.
+Creates a versioned ZIP archive of the addon files for the addon release workflow.
 This script does not perform in-game verification - that will be done after issue #9 integration.
 
 Uses Python standard library zipfile module, no external dependencies.
@@ -77,7 +77,7 @@ def main():
             zipf.write(file, arcname=f"{args.name}/{file}")
     
     print(f"Package created successfully: {archive_path}")
-    print("Note: This package has not been verified in-game. In-game verification will be performed after issue #9 integration.")
+    print("Note: This package has not been verified in-game. Archive validation does not replace in-game verification.")
 
 if __name__ == "__main__":
     main()
