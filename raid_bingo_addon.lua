@@ -27,8 +27,8 @@ function addon:OnEnable()
     print("|cFF00FF00Raid Bingo Addon loaded. Marks are self-reported and private.|r")
 end
 
--- Generate a no-duplicate card. Raid-specific decks mix up to 16 raid squares
--- with generic moments; the dedicated generic deck stays raid-neutral.
+-- Generate a no-duplicate card. Raid-specific decks mix a random 2–8 raid
+-- squares with generic moments; the dedicated generic deck stays raid-neutral.
 function addon:GenerateCardFromCatalog(deckName)
     local deck = RaidBingoCatalog and RaidBingoCatalog[deckName]
     if type(deck) ~= "table" then
@@ -59,12 +59,12 @@ function addon:GenerateCardFromCatalog(deckName)
     if deckName == "raid_generic" then
         pool = collectUniqueSquares(deck)
     else
-        -- Keep raid cards recognizable while including the shared raid moments:
-        -- aim for 16 raid squares and 8 generic squares in the 24-cell draw.
+        -- Keep raid cards mostly generic, with a random handful of encounter
+        -- squares so each raid-specific card feels different.
         local raidPool = collectUniqueSquares(deck)
         self:ShuffleTable(raidPool)
         local seenIds, seenText = {}, {}
-        local specificCount = math.min(16, #raidPool)
+        local specificCount = math.min(math.random(2, 8), #raidPool)
         for i = 1, specificCount do
             local square = raidPool[i]
             table.insert(pool, square)

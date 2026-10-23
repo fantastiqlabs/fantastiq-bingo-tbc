@@ -23,7 +23,7 @@
 - Complete a horizontal or vertical line to yell `BINGO!!!!!!!!!` with a random joke. The addon announces once per card.
 - Use `/rb new` for another random card or `/rb reset` to clear marks.
 
-The Zul'Aman deck has Zul'Aman encounter squares. Raid-specific cards aim for 16 unique raid squares plus 8 raid-generic moments, using more generic squares when the raid pool is short. The raid-generic deck contains only raid-neutral squares. Marks are private and self-reported; the addon does not detect encounter events or verify achievements.
+The Zul'Aman deck has Zul'Aman encounter squares. Each raid-specific card randomly uses 2–8 unique raid squares and fills the remaining spaces with generic moments. The raid-generic deck contains only raid-neutral squares. Marks are private and self-reported; the addon does not detect encounter events or verify achievements.
 
 ## Test candidate status
 

@@ -6,14 +6,14 @@ A standalone World of Warcraft: The Burning Crusade Classic Anniversary raid bin
 
 The project has a modular Lua addon, a 5×5 card UI, a native deck selector, randomized no-duplicate pools, local square marking, and a free center square. Marks are self-reported and local to each player.
 
-RC.1 failed during startup on an Anniversary client because the frame was created without `BackdropTemplate`; that fix is in RC.2. RC.3 introduced label fitting and green marks ([issue #14](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/14)); RC.4 gives the cells and text more room after owner feedback. RC.4 also mixes raid-specific and raid-generic moments in raid cards ([issue #15](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/15)). Use the latest prerelease for testing.
+RC.1 failed during startup on an Anniversary client because the frame was created without `BackdropTemplate`; that fix is in RC.2. RC.3 introduced label fitting and green marks ([issue #14](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/14)); RC.4 gives the cells and text more room after owner feedback. RC.5 mixes a random 2–8 raid-specific squares with raid-generic moments on each raid card ([issue #15](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/15)). Use the latest prerelease for testing.
 
 The TOC targets interface `20506` (Burning Crusade Classic Anniversary 2.5.6 in current published client references). No in-game client verification has been performed. See [client target notes](RESEARCH_CLIENT_VERSION.md) and [smoke test checklist](SMOKE_TEST_CHECKLIST.md).
 
 ## Current limitations
 
 - Decks can be selected from the in-game dropdown or with `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, and `/rb generic`.
-- Raid-specific cards aim for 16 unique raid squares and 8 raid-generic moments; short raid pools use more generic squares. The Raid Generic deck contains only raid-neutral squares.
+- Raid-specific cards randomly use 2–8 unique raid squares and fill the rest with generic moments. The Raid Generic deck contains only raid-neutral squares.
 - Squares are self-reported; the addon does not detect encounter events or verify achievements.
 - A GitHub test pre-release is not in-game verified. Complete [SMOKE_TEST_CHECKLIST.md](SMOKE_TEST_CHECKLIST.md) and report any errors before treating it as ready for group use.
 
