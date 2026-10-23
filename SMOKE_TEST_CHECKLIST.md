@@ -21,7 +21,9 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 
 ## Marking and bingo
 
+- [ ] Long square labels wrap and scale down to remain inside their cells.
 - [ ] Clicking a square marks it green; clicking it again clears it.
+- [ ] Marked cells look green rather than dark red under the client theme.
 - [ ] Marks remain after reloading the UI or relogging with the same card.
 - [ ] Completing a horizontal or vertical line yells `BINGO!!!!!!!!!` with a random quote.
 - [ ] A card yells only once; a new card can announce again.

@@ -4,24 +4,14 @@
 -- Create the addon namespace
 local addonName, addon = ...
 
--- SetBackdrop moved to BackdropTemplate in newer WoW clients. Older Classic
--- clients still expose it on frames created without the template, so support
--- both APIs and use the button's normal texture as a color fallback.
+-- Marked cells use an explicit green texture rather than tinting the button's
+-- backdrop, whose appearance varies between client button templates.
 local function SetButtonMarked(button, isMarked)
-    if button.SetBackdropColor then
+    if button.markOverlay then
         if isMarked then
-            button:SetBackdropColor(0, 1, 0, 0.45)
+            button.markOverlay:Show()
         else
-            button:SetBackdropColor(0, 0, 0, 0.5)
-        end
-    else
-        local normalTexture = button.GetNormalTexture and button:GetNormalTexture()
-        if normalTexture and normalTexture.SetVertexColor then
-            if isMarked then
-                normalTexture:SetVertexColor(0.35, 1, 0.35, 1)
-            else
-                normalTexture:SetVertexColor(1, 1, 1, 1)
-            end
+            button.markOverlay:Hide()
         end
     end
 
@@ -30,6 +20,22 @@ local function SetButtonMarked(button, isMarked)
             button.text:SetTextColor(0, 0, 0, 1)
         else
             button.text:SetTextColor(1, 1, 1, 1)
+        end
+    end
+end
+
+local labelFont, _, labelFontFlags = GameFontNormal:GetFont()
+local function SetButtonLabel(button, label)
+    local text = button.text
+    text:SetText(label)
+    if not labelFont then return end
+
+    -- Start comfortably readable, then step down until wrapped text fits the
+    -- cell's available height. The minimum prevents tiny, unusable labels.
+    for fontSize = 12, 7, -1 do
+        text:SetFont(labelFont, fontSize, labelFontFlags)
+        if text:GetStringHeight() <= text:GetHeight() then
+            break
         end
     end
 end
@@ -105,18 +111,19 @@ function addon:CreateUI()
     for i = 1, 25 do
         local buttonIndex = i
         local button = CreateFrame("Button", "RaidBingoButton" .. buttonIndex, frame, "UIPanelButtonTemplate")
-        button:SetSize(70, 40)
+        button:SetSize(76, 62)
 
         -- Position buttons in a grid
         local row = math.floor((i - 1) / 5)
         local col = (i - 1) % 5
 
-        if i == 13 then
-            -- Center square is "Free Space"
-            button:SetPoint("TOPLEFT", frame, "TOPLEFT", 20 + col * 80, -60 - row * 50)
-        else
-            button:SetPoint("TOPLEFT", frame, "TOPLEFT", 20 + col * 80, -60 - row * 50)
-        end
+        button:SetPoint("TOPLEFT", frame, "TOPLEFT", 20 + col * 80, -75 - row * 75)
+
+        local markOverlay = button:CreateTexture(nil, "OVERLAY")
+        markOverlay:SetAllPoints(button)
+        markOverlay:SetColorTexture(0, 0.85, 0.1, 0.9)
+        markOverlay:Hide()
+        button.markOverlay = markOverlay
 
         -- Set up the button click handler
         button:SetScript("OnClick", function()
@@ -127,9 +134,10 @@ function addon:CreateUI()
         self.gridButtons[i] = button
 
         -- Create font string for button text
-        local buttonText = button:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        local buttonText = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         buttonText:SetPoint("CENTER", 0, 0)
-        buttonText:SetSize(64, 34)
+        buttonText:SetSize(68, 54)
+        buttonText:SetDrawLayer("OVERLAY", 1)
         buttonText:SetJustifyH("CENTER")
         buttonText:SetWordWrap(true)
         buttonText:SetText("")
@@ -170,7 +178,7 @@ function addon:UpdateButtonState(buttonIndex, isMarked)
     if cardData and cardData.squares then
         local square = cardData.squares[buttonIndex]
         local squareText = type(square) == "table" and square.text or square or ""
-        button.text:SetText(squareText == "Free Space" and "FREE" or squareText)
+        SetButtonLabel(button, squareText == "Free Space" and "FREE" or squareText)
     end
 
     -- Set the button's tooltip
@@ -292,7 +300,7 @@ function addon:UpdateCard()
         if button then
             local marked = i == 13 or marks[i] == true
             SetButtonMarked(button, marked)
-            button.text:SetText(i == 13 and "FREE" or text)
+            SetButtonLabel(button, i == 13 and "FREE" or text)
             button:SetScript("OnEnter", function()
                 GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
                 GameTooltip:SetText(tooltipText)
