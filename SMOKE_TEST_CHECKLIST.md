@@ -30,7 +30,7 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] The center cell matches the other cell dimensions, stays green, and centers `FREE`.
 - [ ] The scale button and `/rb scale` cycle through all six persisted window sizes; `/rb scale 100` restores normal size.
 - [ ] Marks remain after reloading the UI or relogging with the same card.
-- [ ] Completing a horizontal or vertical line yells `BINGO!!!!!!!!!` with a random quote.
+- [ ] Completing a horizontal or vertical line yells `BINGO!!!!!!!!!` with one randomly selected Monkey Island-themed quip.
 - [ ] A card yells only once; a new card can announce again.
 
 ## Report

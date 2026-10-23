@@ -21,7 +21,7 @@
 - Choose a deck from the dropdown, or use `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, or `/rb generic`.
 - Click the percentage button to cycle window size. Choose a specific preset with `/rb scale 25`, `/rb scale 50`, `/rb scale 75`, `/rb scale 100`, `/rb scale 125`, or `/rb scale 150`. The setting is saved; `/rb scale` cycles to the next preset.
 - Click a square to mark it green; click it again to unmark it. The free center is automatic.
-- Complete a horizontal or vertical line to yell `BINGO!!!!!!!!!` with a random joke. The addon announces once per card.
+- Complete a horizontal or vertical line to yell `BINGO!!!!!!!!!` with one randomly selected pirate-adventure quip. The addon announces once per card.
 - Use `/rb new` for another random card or `/rb reset` to clear marks.
 
 The Zul'Aman deck has Zul'Aman encounter squares. Each raid-specific card randomly uses 2–8 unique raid squares and fills the remaining spaces with generic moments. The raid-generic deck contains only raid-neutral squares. Marks are private and self-reported; the addon does not detect encounter events or verify achievements.
