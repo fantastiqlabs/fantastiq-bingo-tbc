@@ -33,7 +33,7 @@ local function SetButtonLabel(button, label)
 
     -- Check measured height and estimated wrapped height so labels also fit
     -- on clients where FontString reports stale height after changing fonts.
-    for fontSize = 10, 6, -1 do
+    for fontSize = 7, 5, -1 do
         text:SetFont(labelFont, fontSize, labelFontFlags)
         local charactersPerLine = math.max(1, math.floor(text:GetWidth() / (fontSize * 0.58)))
         local estimatedLines = math.ceil(#label / charactersPerLine)
@@ -159,7 +159,9 @@ function addon:CreateUI()
         button:SetPoint("TOPLEFT", frame, "TOPLEFT", 40 + col * 110, -104 - row * 90)
 
         local markOverlay = button:CreateTexture(nil, "OVERLAY")
-        markOverlay:SetAllPoints(button)
+        -- Leave the button's own border visible when the green fill is shown.
+        markOverlay:SetPoint("TOPLEFT", button, "TOPLEFT", 4, -4)
+        markOverlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -4, 4)
         markOverlay:SetColorTexture(0, 0.85, 0.1, 0.9)
         markOverlay:Hide()
         button.markOverlay = markOverlay

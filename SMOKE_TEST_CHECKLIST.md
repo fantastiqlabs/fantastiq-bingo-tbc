@@ -25,7 +25,8 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] Long square labels wrap and scale down while keeping visible padding inside their cells.
 - [ ] The larger 5×5 grid is centered in the window and labels remain fully visible.
 - [ ] Clicking a square marks it green; clicking it again clears it.
-- [ ] Marked cells look green rather than dark red under the client theme.
+- [ ] Marked cells look green rather than dark red, and retain their button borders.
+- [ ] The center cell matches the other cell dimensions, stays green, and centers `FREE`.
 - [ ] The scale button and `/rb scale` cycle through all six persisted window sizes; `/rb scale 100` restores normal size.
 - [ ] Marks remain after reloading the UI or relogging with the same card.
 - [ ] Completing a horizontal or vertical line yells `BINGO!!!!!!!!!` with a random quote.
