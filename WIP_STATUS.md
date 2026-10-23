@@ -1,6 +1,6 @@
 # Work in progress
 
-The current published prerelease is `v0.1.0-rc.8`. The active candidate worktree changes marked fill to a separate pastel cell backdrop and centers the automark checkbox with its label.
+The current published prerelease is `v0.1.0-rc.9`. The candidate separates cell backdrop color from the border, centers the automark control, matches observable raid events to card text, and laughs after bingo.
 
 ## Current implementation notes
 
