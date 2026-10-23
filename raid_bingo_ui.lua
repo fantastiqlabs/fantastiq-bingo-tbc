@@ -30,9 +30,9 @@ local function SetButtonLabel(button, label)
     text:SetText(label)
     if not labelFont then return end
 
-    -- Start comfortably readable, then step down until wrapped text fits the
-    -- cell's available height. The minimum prevents tiny, unusable labels.
-    for fontSize = 12, 7, -1 do
+    -- Start at a readable size, then step down only as needed to leave the
+    -- wrapped label inside the padded cell area.
+    for fontSize = 13, 8, -1 do
         text:SetFont(labelFont, fontSize, labelFontFlags)
         if text:GetStringHeight() <= text:GetHeight() then
             break
@@ -111,13 +111,13 @@ function addon:CreateUI()
     for i = 1, 25 do
         local buttonIndex = i
         local button = CreateFrame("Button", "RaidBingoButton" .. buttonIndex, frame, "UIPanelButtonTemplate")
-        button:SetSize(76, 62)
+        button:SetSize(78, 70)
 
         -- Position buttons in a grid
         local row = math.floor((i - 1) / 5)
         local col = (i - 1) % 5
 
-        button:SetPoint("TOPLEFT", frame, "TOPLEFT", 20 + col * 80, -75 - row * 75)
+        button:SetPoint("TOPLEFT", frame, "TOPLEFT", 10 + col * 80, -72 - row * 78)
 
         local markOverlay = button:CreateTexture(nil, "OVERLAY")
         markOverlay:SetAllPoints(button)
@@ -136,7 +136,7 @@ function addon:CreateUI()
         -- Create font string for button text
         local buttonText = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         buttonText:SetPoint("CENTER", 0, 0)
-        buttonText:SetSize(68, 54)
+        buttonText:SetSize(70, 62)
         buttonText:SetDrawLayer("OVERLAY", 1)
         buttonText:SetJustifyH("CENTER")
         buttonText:SetWordWrap(true)
