@@ -154,7 +154,7 @@ end
 -- Shuffle a table (Fisher-Yates shuffle)
 function addon:ShuffleTable(t)
     local n = #t
-    
+
     while n > 1 do
         local k = math.random(n)
         t[n], t[k] = t[k], t[n]
@@ -210,7 +210,7 @@ function addon:CreateUI()
 
     -- Store reference to the main frame for later use
     self.mainFrame = frame;
-    
+
     -- Generate a card based on current deck
     self:GenerateAndDisplayCard();
 end
@@ -331,7 +331,7 @@ function addon:CheckLines()
     end
 
     -- Diagonal lines are NOT implemented for MVP as per requirements
-    
+
     return lines;
 end
 
