@@ -6,6 +6,8 @@ A standalone World of Warcraft: The Burning Crusade Classic Anniversary raid bin
 
 The project has a modular Lua addon, a 5×5 card UI, a native deck selector, randomized no-duplicate pools, local square marking, and a free center square. Marks are self-reported and local to each player.
 
+The first test candidate failed during startup on an Anniversary client because the frame was created without `BackdropTemplate`. The startup fix is tracked in [issue #12](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/12) and will be shipped as `0.1.0-rc.2`; please use that newer candidate for further testing.
+
 The TOC targets interface `20506` (Burning Crusade Classic Anniversary 2.5.6 in current published client references). No in-game client verification has been performed. See [client target notes](RESEARCH_CLIENT_VERSION.md) and [smoke test checklist](SMOKE_TEST_CHECKLIST.md).
 
 ## Current limitations

@@ -131,18 +131,22 @@ end
 -- Create the main UI frame
 function addon:CreateUI()
     -- Create the main frame
-    local frame = CreateFrame("Frame", "RaidBingoFrame", UIParent);
+    local frame = CreateFrame("Frame", "RaidBingoFrame", UIParent, "BackdropTemplate");
     frame:SetSize(400, 500);
     frame:SetPoint("CENTER");
-    frame:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true,
-        tileSize = 32,
-        edgeSize = 32,
-        insets = { left = 11, right = 11, top = 11, bottom = 11 }
-    });
-    frame:SetBackdropColor(0, 0, 0, 0.8);
+    if frame.SetBackdrop then
+        frame:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true,
+            tileSize = 32,
+            edgeSize = 32,
+            insets = { left = 11, right = 11, top = 11, bottom = 11 }
+        });
+        if frame.SetBackdropColor then
+            frame:SetBackdropColor(0, 0, 0, 0.8);
+        end
+    end
 
     -- Make it movable
     frame:EnableMouse(true);

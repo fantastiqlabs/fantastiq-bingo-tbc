@@ -4,21 +4,55 @@
 -- Create the addon namespace
 local addonName, addon = ...
 
+-- SetBackdrop moved to BackdropTemplate in newer WoW clients. Older Classic
+-- clients still expose it on frames created without the template, so support
+-- both APIs and use the button's normal texture as a color fallback.
+local function SetButtonMarked(button, isMarked)
+    if button.SetBackdropColor then
+        if isMarked then
+            button:SetBackdropColor(0, 1, 0, 0.45)
+        else
+            button:SetBackdropColor(0, 0, 0, 0.5)
+        end
+    else
+        local normalTexture = button.GetNormalTexture and button:GetNormalTexture()
+        if normalTexture and normalTexture.SetVertexColor then
+            if isMarked then
+                normalTexture:SetVertexColor(0.35, 1, 0.35, 1)
+            else
+                normalTexture:SetVertexColor(1, 1, 1, 1)
+            end
+        end
+    end
+
+    if button.text then
+        if isMarked then
+            button.text:SetTextColor(0, 0, 0, 1)
+        else
+            button.text:SetTextColor(1, 1, 1, 1)
+        end
+    end
+end
+
 -- Create and manage the main UI frame
 function addon:CreateUI()
     -- Create the main frame
-    local frame = CreateFrame("Frame", "RaidBingoFrame", UIParent)
+    local frame = CreateFrame("Frame", "RaidBingoFrame", UIParent, "BackdropTemplate")
     frame:SetSize(440, 500)
     frame:SetPoint("CENTER")
-    frame:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true,
-        tileSize = 32,
-        edgeSize = 32,
-        insets = { left = 11, right = 11, top = 11, bottom = 11 }
-    })
-    frame:SetBackdropColor(0, 0, 0, 0.8)
+    if frame.SetBackdrop then
+        frame:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true,
+            tileSize = 32,
+            edgeSize = 32,
+            insets = { left = 11, right = 11, top = 11, bottom = 11 }
+        })
+        if frame.SetBackdropColor then
+            frame:SetBackdropColor(0, 0, 0, 0.8)
+        end
+    end
 
     -- Make the frame movable
     frame:SetMovable(true)
@@ -130,14 +164,7 @@ function addon:UpdateButtonState(buttonIndex, isMarked)
     -- Get the card data to determine text and marking status
     local cardData = self:GetCardData()
 
-    -- Update button appearance based on mark state
-    if isMarked then
-        button:SetBackdropColor(0, 1, 0, 0.3) -- Green background for marked squares
-        button.text:SetTextColor(0, 0, 0, 1)   -- Black text for marked squares
-    else
-        button:SetBackdropColor(0, 0, 0, 0.5) -- Dark background for unmarked squares
-        button.text:SetTextColor(1, 1, 1, 1)   -- White text for unmarked squares
-    end
+    SetButtonMarked(button, isMarked)
 
     -- Update the text on the button
     if cardData and cardData.squares then
@@ -264,13 +291,7 @@ function addon:UpdateCard()
         local tooltipText = i == 13 and "Free Space" or text
         if button then
             local marked = i == 13 or marks[i] == true
-            if marked then
-                button:SetBackdropColor(0, 1, 0, 0.45)
-                button.text:SetTextColor(0, 0, 0, 1)
-            else
-                button:SetBackdropColor(0, 0, 0, 0.5)
-                button.text:SetTextColor(1, 1, 1, 1)
-            end
+            SetButtonMarked(button, marked)
             button.text:SetText(i == 13 and "FREE" or text)
             button:SetScript("OnEnter", function()
                 GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
