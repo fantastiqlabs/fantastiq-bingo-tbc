@@ -5,7 +5,7 @@
 local addonName, addon = ...
 local BOX_SCALE_PRESETS = { 80, 100, 120 }
 local TEXT_SIZE_PRESETS = { 5, 6, 7, 8, 9, 10 }
-local WINDOW_SCALE_PRESETS = { 75, 100, 125, 150 }
+local WINDOW_SCALE_PRESETS = { 25, 50, 75, 100, 125, 150 }
 
 local CELL_UNMARKED_COLOR = { 0.84, 0.48, 0.48, 1 }
 local CELL_MARKED_COLOR = { 0.58, 0.82, 0.58, 1 }
