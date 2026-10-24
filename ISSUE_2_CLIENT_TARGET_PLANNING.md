@@ -1,13 +1,11 @@
-# Issue 2: Confirm exact TBC client and addon API target
+# Issue 2: TBC Anniversary client target
 
-## Current decision
+## Decision
 
-Target Burning Crusade Classic Anniversary, patch 2.5.6, with TOC interface `20506` based on the current published build reference. `Interface: 11201` was incorrect and has been replaced in `raid_bingo_addon.toc`. See [RESEARCH_CLIENT_VERSION.md](RESEARCH_CLIENT_VERSION.md) for sources and verification limits.
+Target Burning Crusade Classic Anniversary with TOC interface `20506`, based on current published client references. The target is not confirmed against the owner's live client yet. Verify it with `/dump select(4, GetBuildInfo())` and check Lua errors using [SMOKE_TEST_CHECKLIST.md](SMOKE_TEST_CHECKLIST.md).
 
-## Compatibility status
+## Compatibility boundary
 
-This target is not yet confirmed by loading the addon in the owner's client. Verify the live interface number with `/dump select(4, GetBuildInfo())`, then load the addon with Lua errors visible and complete [SMOKE_TEST_CHECKLIST.md](SMOKE_TEST_CHECKLIST.md). Revisit the TOC value if the live patch differs.
+The candidate uses Blizzard UI frames, dropdowns, SavedVariables, slash commands, the minimap, and opt-in combat/chat events. RC10 is a test candidate, not a claim of client compatibility. Report any API or behavior mismatch before updating the interface target.
 
-## API review still needed
-
-Review the APIs used by the addon against the Anniversary client. Confirm slash-command registration, frame creation, saved variables, and combat behavior during the in-game smoke test.
+See [RESEARCH_CLIENT_VERSION.md](RESEARCH_CLIENT_VERSION.md) for source notes and uncertainty.
