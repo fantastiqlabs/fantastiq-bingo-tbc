@@ -1,0 +1,14 @@
+name: Announce published releases
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    uses: steffenlongva/agentastiq/.github/workflows/discord-release-reusable.yml@main
+    secrets:
+      DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
