@@ -2,6 +2,11 @@ name: Announce a GitHub release to Discord
 
 on:
   workflow_call:
+    inputs:
+      project_name:
+        description: App or project name shown as the Discord embed header
+        required: true
+        type: string
     secrets:
       FANTASTIQLABS_DISCORD_WEBHOOK:
         required: true
@@ -21,26 +26,26 @@ jobs:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           RELEASE_URL: ${{ github.event.release.html_url }}
           RELEASE_BODY: ${{ github.event.release.body }}
-          PROJECT: ${{ github.repository }}
+          PROJECT_NAME: ${{ inputs.project_name }}
         run: |
           set -euo pipefail
           if [[ -z "$FANTASTIQLABS_DISCORD_WEBHOOK" ]]; then
             echo "Fantastiq Labs Discord webhook secret is empty." >&2
             exit 1
           fi
-          title="${RELEASE_NAME:-$RELEASE_TAG}"
-          title="${title:0:240}"
+          release_title="${RELEASE_NAME:-$RELEASE_TAG}"
+          release_title="${release_title:0:240}"
           description="${RELEASE_BODY:0:3800}"
           if [[ -z "$description" ]]; then
             description="Release $RELEASE_TAG is available. See the release page for details."
           fi
           payload="$(jq -n \
-            --arg project "$PROJECT" \
-            --arg title "$title" \
+            --arg project "$PROJECT_NAME" \
+            --arg release_title "$release_title" \
             --arg tag "$RELEASE_TAG" \
             --arg url "$RELEASE_URL" \
             --arg description "$description" \
-            '{embeds:[{title:$title,url:$url,description:$description,color:5793266,fields:[{name:"Project",value:$project,inline:true},{name:"Version",value:$tag,inline:true}],footer:{text:"GitHub release • deployment status is separate"}}],allowed_mentions:{parse:[]}}')"
+            '{embeds:[{title:$project,url:$url,description:$description,color:5793266,fields:[{name:"Release",value:$release_title,inline:true},{name:"Version",value:$tag,inline:true}],footer:{text:"GitHub release • deployment status is separate"}}],allowed_mentions:{parse:[]}}')"
           set +e
           status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
             --connect-timeout 10 --max-time 30 \
