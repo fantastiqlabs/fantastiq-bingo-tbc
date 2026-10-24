@@ -1,6 +1,6 @@
 # Work in progress
 
-The current published prerelease is `v0.1.0-rc.9`. The `v0.1.0-rc.10` candidate tightens the window around the grid and adds saved whole-window scaling (75%, 100%, 125%, 150%). It also retains the separate cell backdrop and border, centered automark control, observable raid-event matching, and `/laugh` after bingo. RC.10 has not been tested in the WoW client.
+The current candidate is `v1.0.0-rc.1`. It includes the generic catalog expansion and the current card, scaling, automark, and bingo announcement features. The packaged archive and interface target are validated in CI, but this release has not been tested inside the WoW client.
 
 ## Current implementation notes
 
