@@ -11,4 +11,4 @@ jobs:
   announce:
     uses: steffenlongva/agentastiq/.github/workflows/discord-release-reusable.yml@main
     secrets:
-      DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+      FANTASTIQLABS_DISCORD_WEBHOOK: ${{ secrets.FANTASTIQLABS_DISCORD_WEBHOOK }}
