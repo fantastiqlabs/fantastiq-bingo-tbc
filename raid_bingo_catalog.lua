@@ -246,7 +246,7 @@ RaidBingoCatalog = {
         { id = "generic_050", text = "Someone's pet runs off during combat", category = "pet" },
         { id = "generic_051", text = "A player says 'I thought we were in a dungeon'", category = "quote" },
         { id = "generic_052", text = "Someone forgets to use a trinket", category = "supplies" },
-        { id = "generic_053", text = "A player says 'I have the right buff' and doesn't", category = "quote" },
+        { id = "generic_053", text = "A player says 'I have the right buff' and is wrong", category = "quote" },
         { id = "generic_054", text = "Someone asks for a port and then says 'wait'", category = "group" },
         { id = "generic_055", text = "A player says 'I'm not the one who died'", category = "quote" },
         { id = "generic_056", text = "Someone's pet attacks the wrong mob", category = "pet" },

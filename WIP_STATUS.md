@@ -2,6 +2,14 @@
 
 The current published prerelease is `v0.1.0-rc.9`. The `v0.1.0-rc.10` candidate tightens the window around the grid and adds saved whole-window scaling (75%, 100%, 125%, 150%). It also retains the separate cell backdrop and border, centered automark control, observable raid-event matching, and `/laugh` after bingo. RC.10 has not been tested in the WoW client.
 
+## Catalog milestone: 30-to-100 raid-generic entries
+
+**Status: ✅ Complete**
+
+The raid-generic pool has been grown from the RC10 baseline of 30 entries to **110 distinct entries** (IDs `generic_001` through `generic_110`). All entries are generic (no raid/boss names or encounter-specific mechanics), have unique IDs, no duplicate text, and pass the source-level validator checks (unique IDs, count ≥100, duplicate text, forbidden terms). The full catalog has 220 total IDs across all pools.
+
+See `raid_bingo_catalog.lua` for the current entries and `validate_catalog.lua` for the validator script.
+
 ## Current implementation notes
 
 - Box presets are 80%, 100%, and 120%; text presets are 5–10 pt and long labels shrink further to fit. Whole-window scale presets are 75%, 100%, 125%, and 150%. The grid stays centered and frame height follows grid dimensions to reduce unused space.

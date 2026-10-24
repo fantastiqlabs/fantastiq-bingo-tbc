@@ -10,6 +10,10 @@ Earlier prereleases fixed startup, label fitting, card generation, and the raid 
 
 The TOC targets interface `20506` (Burning Crusade Classic Anniversary 2.5.6 in current published client references). No in-game client verification has been performed. See [client target notes](RESEARCH_CLIENT_VERSION.md) and [smoke test checklist](SMOKE_TEST_CHECKLIST.md).
 
+## Catalog status
+
+The raid-generic pool contains **110 distinct entries** (IDs `generic_001` through `generic_110`). All entries are generic (no raid/boss names or encounter-specific mechanics), have unique IDs, no duplicate text, and pass the source-level validator checks. The full catalog has 220 total IDs across all pools.
+
 ## Current limitations
 
 - Decks can be selected from the in-game dropdown or with `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, and `/rb generic`.

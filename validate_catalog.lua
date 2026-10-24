@@ -16,17 +16,18 @@ local function validate_catalog(catalog_path)
     local warnings = {}
 
     -- Extract raid_generic section
-    local raid_generic_section = content:match("raid%s*=%s*%{(.-)\n%s*%}")
+    local raid_generic_section = content:match("raid_generic%s*=%s*%{(.-)\n%s*%}")
 
     if not raid_generic_section then
         print("ERROR: Could not find raid_generic section")
         return false
     end
 
-    -- Extract all entries
+    -- Extract all entries (handles both quoted and unquoted keys)
     local entries = {}
-    for entry in raid_generic_section:gmatch("%{%s*id%s*=%s*["'](.-)["']%s*,%s*text%s*=%s*["'](.-)["']") do
-        local id, text = entry:match("(%S+)%s*,%s*(.-)$")
+    for entry in raid_generic_section:gmatch("%{(.-)%}") do
+        local id = entry:match("id%s*=%s*['\"]([^'\"]+)['\"]")
+        local text = entry:match("text%s*=%s*['\"]([^'\"]+)['\"]")
         if id and text then
             table.insert(entries, {id = id, text = text})
         end
