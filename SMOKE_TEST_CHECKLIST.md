@@ -15,7 +15,7 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] The dropdown lists Raid Generic, Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, and Zul'Aman.
 - [ ] Each dropdown choice shows a new 5×5 card.
 - [ ] `/rb za` selects Zul'Aman and shows Zul'Aman squares.
-- [ ] The Boxes dropdown selects 80%, 100%, and 120%; the Text dropdown selects 5–10 pt and long labels still fit.
+- [ ] The Boxes dropdown selects 80%, 100%, and 120%; the Text dropdown selects 5–10, 12, 14, 16, and 18 pt, and long labels still fit.
 - [ ] The Window dropdown selects 25%, 50%, 75%, 100%, 125%, and 150%; scale stays within the screen and persists after reload.
 - [ ] Changing box size keeps the grid centered, reduces unused frame space, and does not clip selectors, checkbox, or card.
 - [ ] The minimap button toggles the card without Lua errors.
