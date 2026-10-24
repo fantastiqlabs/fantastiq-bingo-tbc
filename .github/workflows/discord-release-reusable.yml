@@ -7,6 +7,22 @@ on:
         description: App or project name shown as the Discord embed header
         required: true
         type: string
+      release_title:
+        required: false
+        type: string
+        default: ''
+      release_tag:
+        required: false
+        type: string
+        default: ''
+      release_url:
+        required: false
+        type: string
+        default: ''
+      release_body:
+        required: false
+        type: string
+        default: ''
     secrets:
       FANTASTIQLABS_DISCORD_WEBHOOK:
         required: true
@@ -22,10 +38,10 @@ jobs:
         shell: bash
         env:
           FANTASTIQLABS_DISCORD_WEBHOOK: ${{ secrets.FANTASTIQLABS_DISCORD_WEBHOOK }}
-          RELEASE_NAME: ${{ github.event.release.name }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          RELEASE_URL: ${{ github.event.release.html_url }}
-          RELEASE_BODY: ${{ github.event.release.body }}
+          RELEASE_NAME: ${{ inputs.release_title || github.event.release.name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.event.release.tag_name }}
+          RELEASE_URL: ${{ inputs.release_url || github.event.release.html_url }}
+          RELEASE_BODY: ${{ inputs.release_body || github.event.release.body }}
           PROJECT_NAME: ${{ inputs.project_name }}
         run: |
           set -euo pipefail

@@ -1,0 +1,103 @@
+name: Build and publish addon release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'raid_bingo_*.lua'
+      - 'raid_bingo_addon.toc'
+      - 'scripts/package.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: raid-bingo-release
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    outputs:
+      release_title: ${{ steps.release.outputs.title }}
+      release_tag: ${{ steps.release.outputs.tag }}
+      release_url: ${{ steps.release.outputs.url }}
+      release_body: ${{ steps.release.outputs.body }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Lua validator
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes lua5.4
+
+      - name: Validate generic catalog
+        run: lua5.4 validate_catalog.lua
+
+      - name: Select next prerelease version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest="$(git tag --list 'v1.0.0-rc.*' | sed -nE 's/^v1\.0\.0-rc\.([0-9]+)$/\1/p' | sort -n | tail -n 1)"
+          latest="${latest:-0}"
+          number=$((latest + 1))
+          version="1.0.0-rc.${number}"
+          tag="v${version}"
+          sed -i -E "s/^## Version:.*/## Version: ${version}/" raid_bingo_addon.toc
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Package addon
+        run: python3 scripts/package.py --output dist
+
+      - name: Validate archive
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          archive="dist/raid_bingo_addon_${VERSION}.zip"
+          unzip -t "$archive"
+          unzip -p "$archive" raid_bingo_addon/raid_bingo_addon.toc | grep -Fx "## Version: ${VERSION}"
+
+      - name: Create GitHub prerelease
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="dist/raid_bingo_addon_${VERSION}.zip"
+          gh release create "$TAG" "$archive" \
+            --title "Raid Bingo ${VERSION}" \
+            --generate-notes \
+            --prerelease
+          url="$(gh release view "$TAG" --json url --jq .url)"
+          body="$(gh release view "$TAG" --json body --jq .body)"
+          delimiter="release_notes_${GITHUB_RUN_ID}"
+          {
+            echo "title=Raid Bingo ${VERSION}"
+            echo "tag=${TAG}"
+            echo "url=${url}"
+            echo "body<<${delimiter}"
+            printf '%s\n' "$body"
+            echo "$delimiter"
+          } >> "$GITHUB_OUTPUT"
+
+  announce:
+    needs: package
+    uses: ./.github/workflows/discord-release-reusable.yml
+    with:
+      project_name: Raid Bingo
+      release_title: ${{ needs.package.outputs.release_title }}
+      release_tag: ${{ needs.package.outputs.release_tag }}
+      release_url: ${{ needs.package.outputs.release_url }}
+      release_body: ${{ needs.package.outputs.release_body }}
+    secrets:
+      FANTASTIQLABS_DISCORD_WEBHOOK: ${{ secrets.FANTASTIQLABS_DISCORD_WEBHOOK }}
