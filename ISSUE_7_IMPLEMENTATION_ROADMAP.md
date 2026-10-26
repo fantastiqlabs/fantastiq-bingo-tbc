@@ -3,7 +3,7 @@
 ## Summary of Decisions
 
 ### MVP (Minimum Viable Product)
-The addon is a standalone TBC Classic Anniversary tool that provides players with private, locally saved randomized 5×5 bingo cards. Players can mark or unmark cells themselves, and completing a horizontal or vertical line triggers a local `/yell BINGO!!!!!!!!!` with a randomized Monkey Island quip followed by `/laugh`. Raid-specific cards contain a random 2–8 squares from the selected raid plus generic moments.
+The addon is a standalone TBC Classic Anniversary tool that provides players with private, locally saved randomized 5×5 bingo cards. Players can mark or unmark cells themselves. Raid-specific cards contain a random 2–8 squares from the selected raid plus generic moments.
 
 ### Client/API Baseline
 Target Burning Crusade Classic Anniversary with TOC interface `20506`. The addon uses Blizzard UI frames, dropdowns, SavedVariables, slash commands, the minimap, and opt-in combat/chat events. RC10 is a test candidate, not a claim of client compatibility.
@@ -26,7 +26,7 @@ The repository already contains an RC10 test candidate. Keep planning tied to th
 - Generic and raid-specific decks for Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, and Zul'Aman. Raid-specific cards mix generic squares with a random 2–8 raid-specific squares.
 - Independent box-size, text-size, and window-scale selectors. Current options are listed in `SMOKE_TEST_CHECKLIST.md` and implemented in `raid_bingo_ui.lua`.
 - An opt-in automark checkbox for supported observable events; subjective moments remain manual.
-- Bingo announcements with randomized Monkey Island quotes and `/laugh`, plus the minimap show/hide button.
+- The minimap show/hide button.
 
 ### Next work
 1. Complete the RC10 client smoke test in [issue #23](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/23), using `SMOKE_TEST_CHECKLIST.md`. Until then, describe RC10 as a test candidate, not as client-verified or release-ready.
@@ -50,6 +50,5 @@ For the generic deck and each raid-specific deck (Black Temple, Mount Hyjal, Ser
 - Confirm raid-specific cards include both generic and raid-specific squares, with 2–8 raid-specific squares.
 - Mark and unmark cells, reload the UI, and confirm saved state behaves as described in the smoke checklist.
 - For automark, confirm only the documented observable event rules mark cells; keep unverified or subjective events manual.
-- Complete a line and confirm one `/yell BINGO!!!!!!!!!` with a random quote, followed by `/laugh`.
 
 Use the owner smoke-test issue to record client-only results. Do not record a passing result until it is observed in the target client.
