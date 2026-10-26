@@ -368,6 +368,14 @@ RaidBingoCatalog = {
         { id = "generic_158", text = "A player takes a wrong turn on a familiar route", category = "moment" },
         { id = "generic_159", text = "Someone finds a shortcut but returns to the start", category = "moment" },
         { id = "generic_160", text = "The group waits while addon settings change", category = "moment" },
+        { id = "generic_161", text = "Someone welcomes a first-time raider", category = "moment" },
+        { id = "generic_162", text = "Two raiders compare their favorite mounts", category = "moment" },
+        { id = "generic_163", text = "A player shares a story from another raid night", category = "moment" },
+        { id = "generic_164", text = "Someone compliments a teammate's character name", category = "moment" },
+        { id = "generic_165", text = "The group votes on a favorite raid boss", category = "moment" },
+        { id = "generic_166", text = "A returning player recognizes an old teammate", category = "moment" },
+        { id = "generic_167", text = "A raider offers gear advice to a newcomer", category = "moment" },
+        { id = "generic_168", text = "Someone shares a screenshot from a past raid", category = "moment" },
     },
 
     -- Encounter-grounded moments across all six Zul'Aman bosses; all marks remain self-reported.
@@ -402,6 +410,8 @@ RaidBingoCatalog = {
         { id = "za_028", text = "Akil'zon's storm separates the group", category = "moment", raid = "Zul'Aman" },
         { id = "za_029", text = "Jan'alai's hatchlings scatter across the room", category = "add", raid = "Zul'Aman" },
         { id = "za_030", text = "Halazzi's lynx form gets a loud warning", category = "moment", raid = "Zul'Aman" },
+        { id = "za_031", text = "A rescued hostage extends the event timer", category = "moment", raid = "Zul'Aman" },
+        { id = "za_032", text = "Amani War Bear is earned after timed rescue", category = "moment", raid = "Zul'Aman" },
     }
 }
 
