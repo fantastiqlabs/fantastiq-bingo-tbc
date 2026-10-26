@@ -180,16 +180,30 @@ function addon:CreateUI()
         { label = "Tempest Keep", value = "tempest_keep" },
         { label = "Zul'Aman", value = "zul_aman" },
     }
+    for _, option in ipairs(addon:GetAutoDeckOptions()) do
+        table.insert(deckOptions, option)
+    end
     UIDropDownMenu_Initialize(deckSelector, function(dropdown, level)
         for _, option in ipairs(deckOptions) do
             local deckValue, deckLabel = option.value, option.label
             local info = UIDropDownMenu_CreateInfo()
             info.text = deckLabel
             info.value = deckValue
+            if option.raid then
+                local count, available, minimum = addon:GetAutoDeckStatus(deckValue)
+                info.disabled = not available
+                if not available then
+                    info.text = string.format("%s (unavailable: %d/%d)", deckLabel, count, minimum)
+                    info.tooltipTitle = deckLabel .. " unavailable"
+                    info.tooltipText = string.format("Needs %d unique supported event squares; this catalog has %d.", minimum, count)
+                    info.tooltipOnButton = true
+                end
+            end
             info.func = function()
-                addon:SelectDeck(deckValue)
-                UIDropDownMenu_SetSelectedValue(deckSelector, deckValue)
-                UIDropDownMenu_SetText(deckSelector, deckLabel)
+                if addon:SelectDeck(deckValue) then
+                    UIDropDownMenu_SetSelectedValue(deckSelector, deckValue)
+                    UIDropDownMenu_SetText(deckSelector, deckLabel)
+                end
             end
             UIDropDownMenu_AddButton(info, level)
         end

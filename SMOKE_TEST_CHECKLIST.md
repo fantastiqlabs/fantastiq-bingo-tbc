@@ -12,7 +12,10 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 
 ## Deck selection and cards
 
-- [ ] The dropdown lists Raid Generic, Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, and Zul'Aman.
+- [ ] The dropdown lists Raid Generic and mixed Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, and Zul'Aman cards, plus a separate Auto choice for each raid.
+- [ ] Each Auto choice with fewer than 22 unique supported events is disabled and explains its current/required count; an eligible Auto choice can be selected.
+- [ ] An available Auto card has 22 event-backed squares and three free squares, and selecting it enables the **Automark based on events** checkbox.
+- [ ] Underfilled Auto choices cannot create a partial card or fall back to generic/manual squares.
 - [ ] Each dropdown choice shows a new 5×5 card.
 - [ ] `/rb za` selects Zul'Aman and shows Zul'Aman squares.
 - [ ] The Boxes dropdown selects 80%, 100%, and 120%; the Text dropdown selects 5–10, 12, 14, 16, and 18 pt, and long labels still fit.
@@ -25,6 +28,7 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] Saying a quoted phrase from a card square in raid/party chat marks that square.
 - [ ] `/rb generic` selects the raid-neutral pool; its squares do not name raids or bosses.
 - [ ] Raid-specific cards contain a random 2–8 squares for that raid and generic moments in the remaining spaces.
+- [ ] Mixed cards continue to contain generic moments and are unchanged by selecting or reloading an Auto deck.
 - [ ] Each new card has exactly three FREE squares in randomized positions, with no row, column, or diagonal containing all three.
 - [ ] The three FREE positions stay the same when the card is hidden, reopened, or the UI reloads.
 - [ ] No card contains duplicate squares; shorter raid pools can include generic squares.

@@ -19,6 +19,7 @@
 
 - Type `/rb` or `/raidbingo` to show or hide the card.
 - Choose a deck from the dropdown, or use `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, or `/rb generic`.
+- The dropdown also lists separate Auto decks for each raid. An Auto choice is disabled until its catalog has 22 unique supported event squares. Selecting an available Auto deck turns on **Automark based on events**.
 - Use the **Boxes** dropdown for 80%, 100%, or 120% cell sizes, the **Text** dropdown for 5–10 pt or 12, 14, 16, and 18 pt text, and the **Window** dropdown for 25%, 50%, 75%, 100%, 125%, or 150% overall scale. Text can shrink further when needed to fit a long label. All three settings are saved. The window now trims excess space around the grid and adjusts its height to the chosen cell size.
 - Click the minimap icon to show or hide the card. `/rb` and `/raidbingo` also toggle it.
 - Enable **Automark based on events** to match raid events against the current card: named boss defeats and mob kills from the combat log, player-hit events for explicit mechanic squares, and exact quoted phrases in group chat. You can also toggle the setting with `/rb automark`.
