@@ -1,124 +1,90 @@
 #!/usr/bin/env python3
+"""Verify Raid Bingo ZIP structure, paths, CRCs, and TOC metadata."""
 
-"""
-Raid Bingo Addon Verification Script
-
-Verifies that a packaged addon archive contains exactly the expected files
-and structure for the addon release workflow.
-
-Uses Python standard library zipfile module, no external dependencies.
-"""
-
-import os
+import argparse
+import stat
 import sys
 import zipfile
-import argparse
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+
+from package_contract import ADDON_DIRECTORY, EXPECTED_INTERFACE, REQUIRED_FILES, parse_toc_metadata
+
+
+class VerificationError(ValueError):
+    """The archive does not satisfy the installable addon contract."""
+
+
+def verify_archive(archive_path):
+    """Validate the archive without extracting untrusted paths to disk."""
+    archive_path = Path(archive_path)
+    if not archive_path.is_file():
+        raise VerificationError(f"Archive not found: {archive_path}")
+    try:
+        with zipfile.ZipFile(archive_path, "r") as archive:
+            infos = archive.infolist()
+            names = [item.filename for item in infos]
+            if len(names) != len(set(names)):
+                raise VerificationError("Duplicate archive paths are not allowed")
+
+            expected_names = {f"{ADDON_DIRECTORY}/{name}" for name in REQUIRED_FILES}
+            for info in infos:
+                name = info.filename
+                if not name or "\\" in name or "\x00" in name:
+                    raise VerificationError(f"Unsafe archive path: {name!r}")
+                path = PurePosixPath(name)
+                if path.is_absolute() or any(part in {"", ".", ".."} for part in name.split("/")):
+                    raise VerificationError(f"Unsafe archive path: {name!r}")
+                if len(path.parts) != 2 or path.parts[0] != ADDON_DIRECTORY:
+                    raise VerificationError(f"Unexpected addon path: {name!r}")
+                if info.is_dir():
+                    raise VerificationError(f"Unexpected directory entry: {name!r}")
+                mode = (info.external_attr >> 16) & 0xFFFF
+                file_type = stat.S_IFMT(mode)
+                if file_type and file_type != stat.S_IFREG:
+                    raise VerificationError(f"Non-regular archive entry: {name!r}")
+
+            actual_names = set(names)
+            if actual_names != expected_names:
+                missing = sorted(expected_names - actual_names)
+                unexpected = sorted(actual_names - expected_names)
+                raise VerificationError(f"Archive file set mismatch; missing={missing}, unexpected={unexpected}")
+
+            bad_member = archive.testzip()
+            if bad_member is not None:
+                raise VerificationError(f"CRC check failed for {bad_member}")
+
+            toc_name = f"{ADDON_DIRECTORY}/raid_bingo_addon.toc"
+            try:
+                toc_text = archive.read(toc_name).decode("utf-8")
+            except (UnicodeDecodeError, KeyError) as error:
+                raise VerificationError("TOC is missing or is not valid UTF-8") from error
+            try:
+                _, version = parse_toc_metadata(toc_text)
+            except ValueError as error:
+                raise VerificationError(str(error)) from error
+            expected_filename = f"{ADDON_DIRECTORY}_{version}.zip"
+            if archive_path.name != expected_filename:
+                raise VerificationError(
+                    f"Expected archive filename {expected_filename!r}, found {archive_path.name!r}"
+                )
+            return version
+    except zipfile.BadZipFile as error:
+        raise VerificationError(f"Invalid ZIP archive: {error}") from error
+
 
 def main():
-    parser = argparse.ArgumentParser(description='Verify Raid Bingo addon package')
-    parser.add_argument('archive_path', help='Path to the ZIP archive to verify')
-
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("archive_path", help="Path to the ZIP archive to verify")
+    parser.add_argument("--strict", action="store_true", help="Accepted for compatibility; CRC is always checked")
     args = parser.parse_args()
+    try:
+        version = verify_archive(args.archive_path)
+    except (OSError, VerificationError) as error:
+        print(f"Verification failed: {error}", file=sys.stderr)
+        return 1
+    print(f"Verification successful: version {version}, interface {EXPECTED_INTERFACE}, exact file set, safe paths, CRC valid.")
+    return 0
 
-    archive_path = Path(args.archive_path)
-
-    # Check if archive exists
-    if not archive_path.exists():
-        print(f"Error: Archive not found: {archive_path}")
-        sys.exit(1)
-
-    print(f"Verifying archive: {archive_path}")
-
-    # Extract to temporary location for verification
-    import tempfile
-    import shutil
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        extract_dir = Path(temp_dir) / "extracted"
-        extract_dir.mkdir()
-
-        # Extract the archive
-        print(f"Extracting to: {extract_dir}")
-        with zipfile.ZipFile(archive_path, 'r') as zipf:
-            zipf.extractall(extract_dir)
-
-        # Get the addon directory name (should be the only top-level directory)
-        top_level_items = list(extract_dir.iterdir())
-        if len(top_level_items) != 1:
-            print(f"Error: Expected exactly one top-level item, found {len(top_level_items)}")
-            for item in top_level_items:
-                print(f"  - {item.name}")
-            sys.exit(1)
-
-        addon_dir = top_level_items[0]
-        if not addon_dir.is_dir():
-            print("Error: Top-level item is not a directory")
-            sys.exit(1)
-
-        print(f"Addon directory: {addon_dir.name}")
-
-        # List contents of addon directory
-        print("Contents of addon directory:")
-        for item in sorted(addon_dir.iterdir()):
-            print(f"  {item.name}")
-
-        # Check for required files
-        required_files = [
-            "raid_bingo_addon.toc",
-            "raid_bingo_addon.lua",
-            "raid_bingo_card.lua",
-            "raid_bingo_ui.lua",
-            "raid_bingo_utils.lua",
-            "raid_bingo_catalog.lua"
-        ]
-
-        print("\nVerifying required files:")
-        for file in required_files:
-            file_path = addon_dir / file
-            if file_path.exists() and file_path.is_file():
-                print(f"✓ {file}")
-            else:
-                print(f"✗ {file} (MISSING)")
-                sys.exit(1)
-
-        # Verify TOC interface version
-        toc_path = addon_dir / "raid_bingo_addon.toc"
-        try:
-            with open(toc_path, 'r') as f:
-                for line in f:
-                    if line.startswith('## Interface:'):
-                        interface_version = line.split()[2]
-                        if interface_version != "20506":
-                            print(f"Error: Expected interface version 20506, found {interface_version}")
-                            sys.exit(1)
-                        print(f"✓ Interface version verified: {interface_version}")
-                        break
-                else:
-                    print("Error: Interface version not found in TOC")
-                    sys.exit(1)
-        except Exception as e:
-            print(f"Error reading TOC file: {e}")
-            sys.exit(1)
-
-        # Verify no unexpected nested paths (only top-level addon directory)
-        print("\nVerifying archive structure:")
-        all_items = list(extract_dir.iterdir())
-        if len(all_items) != 1:
-            print(f"Error: Expected exactly one top-level item, found {len(all_items)}")
-            sys.exit(1)
-
-        # Verify no hidden files or directories in the addon directory
-        hidden_items = [item for item in addon_dir.iterdir() if item.name.startswith('.')]
-        if hidden_items:
-            print("Error: Found hidden items in addon directory:")
-            for item in hidden_items:
-                print(f"  {item.name}")
-            sys.exit(1)
-
-        print("✓ Archive structure is clean and correct")
-        print("\nVerification successful! The archive contains exactly the expected files.")
-        print("Note: This verification does not include in-game testing. Archive validation does not replace in-game verification.")
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

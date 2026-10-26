@@ -48,3 +48,12 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] Record the client build, steps, and exact errors or unexpected results.
 - [ ] Confirm subjective squares without a matching observable event remain manual, and unrelated combat events do not mark squares.
 - [ ] `/eventtrace` is diagnostic; combat-log events provide the data the addon matches.
+
+## Release Verification
+
+- [ ] Package was built from the correct commit hash
+- [ ] Package contains only expected addon files with correct structure
+- [ ] TOC interface version is 20506
+- [ ] Package verification script passed successfully
+- [ ] Archive contains no duplicate or unsafe paths
+- [ ] CRC integrity verified by the package verifier
