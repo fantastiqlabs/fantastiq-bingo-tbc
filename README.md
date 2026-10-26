@@ -5,7 +5,7 @@ A lightweight, standalone bingo card addon for **World of Warcraft: The Burning 
 ## What it does
 
 - Deals randomized cards from Raid Generic, Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, and Zul'Aman decks. Raid-specific cards mix in a random handful of encounter moments with general raid bingo squares.
-- Lets you click squares to mark them; marked squares turn pastel green. The center square is a free space.
+- Lets you click squares to mark them; marked squares turn pastel green. New cards include three randomly placed free squares; older saved cards keep their center free square.
 - Can optionally match selected combat-log and chat events to squares on the current card. Subjective moments remain manual.
 - Provides independent box-size, text-size, and whole-window scale controls, plus a minimap button to show or hide the card.
 

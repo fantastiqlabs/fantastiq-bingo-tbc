@@ -22,7 +22,7 @@
 - Use the **Boxes** dropdown for 80%, 100%, or 120% cell sizes, the **Text** dropdown for 5–10 pt or 12, 14, 16, and 18 pt text, and the **Window** dropdown for 25%, 50%, 75%, 100%, 125%, or 150% overall scale. Text can shrink further when needed to fit a long label. All three settings are saved. The window now trims excess space around the grid and adjusts its height to the chosen cell size.
 - Click the minimap icon to show or hide the card. `/rb` and `/raidbingo` also toggle it.
 - Enable **Automark based on events** to match raid events against the current card: named boss defeats and mob kills from the combat log, player-hit events for explicit mechanic squares, and exact quoted phrases in group chat. You can also toggle the setting with `/rb automark`.
-- Click a square to mark it green; click it again to unmark it. The free center is automatic.
+- Click a square to mark it green; click it again to unmark it. Three randomly placed free squares are marked automatically on new cards. Existing saved cards keep their original center free square.
 - Use `/rb new` for another random card or `/rb reset` to clear marks.
 
 The Zul'Aman deck has Zul'Aman encounter squares. Each raid-specific card randomly uses 2–8 unique raid squares and fills the remaining spaces with generic moments. The raid-generic deck contains only raid-neutral squares. Auto-marking works only while in a raid and for observable events represented by the current card; subjective/social moments stay manual unless their quoted phrase appears in group chat. `/eventtrace` is a diagnostic window, while combat-log events provide the death and hit details used by the addon.
