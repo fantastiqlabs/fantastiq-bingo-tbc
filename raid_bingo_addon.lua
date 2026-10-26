@@ -227,10 +227,12 @@ function addon:GenerateAndDisplayCard(forceNew)
         RaidBingoDB.selectedDeck = currentDeck
         RaidBingoDB.playerMarks = {}
         RaidBingoDB.bingoAnnounced = false
+        RaidBingoDB.bingoMilestone = 0
         playerMarks = RaidBingoDB.playerMarks
     end
     self.currentCard = cardData
-    self.bingoAnnounced = RaidBingoDB.bingoAnnounced or false
+    self.bingoMilestone = tonumber(RaidBingoDB.bingoMilestone) or (RaidBingoDB.bingoAnnounced and 1 or 0)
+    self.bingoAnnounced = self.bingoMilestone > 0
     if self.mainFrame then self:UpdateCard() end
 end
 
@@ -245,7 +247,9 @@ function addon:SelectDeck(deckName)
     RaidBingoDB.playerMarks = {}
     RaidBingoDB.cardSquares = nil
     RaidBingoDB.bingoAnnounced = false
+    RaidBingoDB.bingoMilestone = 0
     playerMarks = RaidBingoDB.playerMarks
+    self.bingoMilestone = 0
     self.bingoAnnounced = false
     self:GenerateAndDisplayCard(true)
     return true
@@ -255,7 +259,9 @@ function addon:NewCard()
     RaidBingoDB.playerMarks = {}
     RaidBingoDB.cardSquares = nil
     RaidBingoDB.bingoAnnounced = false
+    RaidBingoDB.bingoMilestone = 0
     playerMarks = RaidBingoDB.playerMarks
+    self.bingoMilestone = 0
     self.bingoAnnounced = false
     self:GenerateAndDisplayCard(true)
 end
@@ -491,7 +497,9 @@ function addon:HandleCommand(msg)
     elseif msg == "reset" then
         RaidBingoDB.playerMarks = {}
         RaidBingoDB.bingoAnnounced = false
+        RaidBingoDB.bingoMilestone = 0
         playerMarks = RaidBingoDB.playerMarks
+        self.bingoMilestone = 0
         self.bingoAnnounced = false
         self:UpdateUI()
         print("Raid Bingo marks reset.")
