@@ -3,7 +3,7 @@
 ## Summary of Decisions
 
 ### MVP (Minimum Viable Product)
-The addon is a standalone TBC Classic Anniversary tool that provides players with private, locally saved randomized 5×5 bingo cards. Players can mark or unmark cells themselves, Raid-specific cards contain a random 2–8 squares from the selected raid plus generic moments.
+The addon is a standalone TBC Classic Anniversary tool that provides players with private, locally saved randomized 5×5 bingo cards. Players can mark or unmark cells themselves. Raid-specific cards contain a random 2–8 squares from the selected raid plus generic moments.
 
 ### Client/API Baseline
 Target Burning Crusade Classic Anniversary with TOC interface `20506`. The addon uses Blizzard UI frames, dropdowns, SavedVariables, slash commands, the minimap, and opt-in combat/chat events. RC10 is a test candidate, not a claim of client compatibility.
