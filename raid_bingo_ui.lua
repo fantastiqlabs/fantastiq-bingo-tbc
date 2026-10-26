@@ -349,18 +349,19 @@ function addon:UpdateButtonState(buttonIndex, isMarked)
     -- Get the card data to determine text and marking status
     local cardData = self:GetCardData()
 
-    SetButtonMarked(button, isMarked)
+    local freeSpace = self:IsFreeSpace(buttonIndex)
+    SetButtonMarked(button, isMarked or freeSpace)
 
     -- Update the text on the button
     if cardData and cardData.squares then
         local square = cardData.squares[buttonIndex]
         local squareText = type(square) == "table" and square.text or square or ""
-        SetButtonLabel(button, squareText == "Free Space" and "FREE" or squareText)
+        SetButtonLabel(button, freeSpace and "FREE" or squareText)
     end
 
     -- Set the button's tooltip
     local square = cardData and cardData.squares[buttonIndex]
-    local tooltipText = type(square) == "table" and square.text or square or ""
+    local tooltipText = freeSpace and "Free Space" or (type(square) == "table" and square.text or square or "")
     if tooltipText ~= "" then
         button:SetScript("OnEnter", function()
             GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
@@ -374,9 +375,9 @@ function addon:UpdateButtonState(buttonIndex, isMarked)
     end
 end
 
--- Clicking a square toggles a private saved mark. The free center is automatic.
+-- Clicking a square toggles a private saved mark. Free squares are automatic.
 function addon:ToggleMark(squareIndex)
-    if squareIndex == 13 then return end
+    if self:IsFreeSpace(squareIndex) then return end
     local marks = self:GetPlayerMarks()
     marks[squareIndex] = not marks[squareIndex]
     self:SavePlayerMarks()
@@ -392,7 +393,7 @@ function addon:ShowUI()
         -- Update all buttons to show current marks
         local playerMarks = self:GetPlayerMarks()
         for i = 1, 25 do
-            self:UpdateButtonState(i, playerMarks[i] or false)
+            self:UpdateButtonState(i, playerMarks[i] or self:IsFreeSpace(i))
         end
     end
 end
@@ -407,7 +408,7 @@ end
 -- Announce each new bingo milestone once per card, even when earlier lines already won.
 function addon:CheckForCompletedLines()
     local marks = self:GetPlayerMarks()
-    local function marked(index) return index == 13 or marks[index] == true end
+    local function marked(index) return self:IsFreeSpace(index) or marks[index] == true end
     local completedLines = 0
     for row = 0, 4 do
         local full = true
@@ -504,11 +505,12 @@ function addon:UpdateCard()
         local button = self.gridButtons[i]
         local square = card.squares and card.squares[i]
         local text = type(square) == "table" and square.text or square or ""
-        local tooltipText = i == 13 and "Free Space" or text
+        local freeSpace = self:IsFreeSpace(i)
+        local tooltipText = freeSpace and "Free Space" or text
         if button then
-            local marked = i == 13 or marks[i] == true
+            local marked = freeSpace or marks[i] == true
             SetButtonMarked(button, marked)
-            SetButtonLabel(button, i == 13 and "FREE" or text)
+            SetButtonLabel(button, freeSpace and "FREE" or text)
             button:SetScript("OnEnter", function()
                 GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
                 GameTooltip:SetText(tooltipText)
@@ -517,39 +519,4 @@ function addon:UpdateCard()
             button:SetScript("OnLeave", function() GameTooltip:Hide() end)
         end
     end
-end
-
--- Function to get the default card for fallback
-function addon:GetDefaultCard()
-    return {
-        squares = {
-            "Defeat a boss in the raid",
-            "Get a specific achievement during raid",
-            "Complete a specific encounter without wipes",
-            "Kill a certain number of mobs",
-            "Use a specific ability or spell",
-            "Reach a certain amount of damage/healing",
-            "Complete a specific mechanic",
-            "Obtain a rare item drop",
-            "Achieve a specific stat threshold",
-            "Defeat the first boss in the raid",
-            "Get 50% health on a boss",
-            "Free Space", -- Center square
-            "Kill 10+ mobs in one encounter",
-            "Complete all adds in an encounter",
-            "Use a class ability during raid",
-            "Deal 100k damage to a single target",
-            "Heal for 50k total in raid",
-            "Get a specific debuff on boss",
-            "Achieve full raid completion",
-            "Defeat the final boss without wipes",
-            "Complete all objectives in encounter",
-            "Kill a named mob",
-            "Use a consumable during raid",
-            "Get a critical hit during raid",
-            "Reach 100% health on a boss"
-        },
-        gridSize = 5,
-        centerSquareIndex = 13
-    }
 end

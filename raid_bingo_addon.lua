@@ -14,6 +14,34 @@ local playerMarks = {};
 local currentDeck = "raid_generic";
 local eventFrame
 
+local function shareWinningLine(a, b, c)
+    local rowA, colA = math.floor((a - 1) / 5), (a - 1) % 5
+    local rowB, colB = math.floor((b - 1) / 5), (b - 1) % 5
+    local rowC, colC = math.floor((c - 1) / 5), (c - 1) % 5
+    return (rowA == rowB and rowB == rowC)
+        or (colA == colB and colB == colC)
+        or (rowA - colA == rowB - colB and rowB - colB == rowC - colC)
+        or (rowA + colA == rowB + colB and rowB + colB == rowC + colC)
+end
+
+function addon:GenerateFreeSpacePositions()
+    local positions = {}
+    repeat
+        positions = {}
+        for index = 1, 25 do positions[index] = index end
+        self:ShuffleTable(positions)
+    until not shareWinningLine(positions[1], positions[2], positions[3])
+    return { [positions[1]] = true, [positions[2]] = true, [positions[3]] = true }
+end
+
+function addon:ApplyRandomFreeSpaces(card)
+    card.freeSpaces = self:GenerateFreeSpacePositions()
+    for index = 1, 25 do
+        if card.freeSpaces[index] then card.squares[index] = "Free Space" end
+    end
+    return card
+end
+
 -- Initialize saved state and create the interface once the addon files are loaded.
 function addon:OnEnable()
     RaidBingoDB = RaidBingoDB or {}
@@ -103,10 +131,11 @@ function addon:GenerateCardFromCatalog(deckName)
     end
 
     self:ShuffleTable(pool)
-    local newCard = { squares = {}, gridSize = 5, centerSquareIndex = 13 }
+    local freeSpaces = self:GenerateFreeSpacePositions()
+    local newCard = { squares = {}, freeSpaces = freeSpaces, gridSize = 5, centerSquareIndex = 13 }
     local nextSquare = 1
     for i = 1, 25 do
-        if i == 13 then
+        if freeSpaces[i] then
             newCard.squares[i] = "Free Space"
         else
             newCard.squares[i] = pool[nextSquare]
@@ -118,7 +147,7 @@ end
 
 -- Get a default card for fallback
 function addon:GetDefaultCard()
-    return {
+    return self:ApplyRandomFreeSpaces({
         squares = {
             "Defeat a boss in the raid",
             "Get a specific achievement during raid",
@@ -131,7 +160,7 @@ function addon:GetDefaultCard()
             "Achieve a specific stat threshold",
             "Defeat the first boss in the raid",
             "Get 50% health on a boss",
-            "Free Space", -- Center square
+            "A raider discovers a forgotten snack between pulls",
             "Kill 10+ mobs in one encounter",
             "Complete all adds in an encounter",
             "Use a class ability during raid",
@@ -148,7 +177,7 @@ function addon:GetDefaultCard()
         },
         gridSize = 5,
         centerSquareIndex = 13
-    }
+    })
 end
 
 -- Shuffle a table (Fisher-Yates shuffle)
@@ -220,10 +249,32 @@ function addon:GenerateAndDisplayCard(forceNew)
     RaidBingoDB = RaidBingoDB or {}
     local saved = RaidBingoDB.cardSquares
     if not forceNew and RaidBingoDB.selectedDeck == currentDeck and type(saved) == "table" and #saved == 25 then
-        cardData = { squares = saved, gridSize = 5, centerSquareIndex = 13 }
+        local savedFreeSpaces = {}
+        for index, square in ipairs(saved) do
+            local text = type(square) == "table" and square.text or square
+            if text == "Free Space" then savedFreeSpaces[index] = true end
+        end
+        local freeSpaces = RaidBingoDB.freeSpacePositions
+        local freeSpaceCount = 0
+        if type(freeSpaces) == "table" then
+            local positionsMatchSquares = true
+            for index = 1, 25 do
+                if freeSpaces[index] then
+                    freeSpaceCount = freeSpaceCount + 1
+                end
+                if (freeSpaces[index] == true) ~= (savedFreeSpaces[index] == true) then positionsMatchSquares = false end
+            end
+            if freeSpaceCount ~= 3 or not positionsMatchSquares then freeSpaces = nil end
+        else
+            for _ in pairs(savedFreeSpaces) do freeSpaceCount = freeSpaceCount + 1 end
+            if freeSpaceCount == 3 then freeSpaces = savedFreeSpaces end
+        end
+        cardData = { squares = saved, freeSpaces = freeSpaces, gridSize = 5, centerSquareIndex = 13 }
+        RaidBingoDB.freeSpacePositions = freeSpaces
     else
         cardData = self:GenerateCardFromCatalog(currentDeck)
         RaidBingoDB.cardSquares = cardData.squares
+        RaidBingoDB.freeSpacePositions = cardData.freeSpaces
         RaidBingoDB.selectedDeck = currentDeck
         RaidBingoDB.playerMarks = {}
         RaidBingoDB.bingoAnnounced = false
@@ -246,6 +297,7 @@ function addon:SelectDeck(deckName)
     RaidBingoDB.selectedDeck = deckName
     RaidBingoDB.playerMarks = {}
     RaidBingoDB.cardSquares = nil
+    RaidBingoDB.freeSpacePositions = nil
     RaidBingoDB.bingoAnnounced = false
     RaidBingoDB.bingoMilestone = 0
     playerMarks = RaidBingoDB.playerMarks
@@ -258,6 +310,7 @@ end
 function addon:NewCard()
     RaidBingoDB.playerMarks = {}
     RaidBingoDB.cardSquares = nil
+    RaidBingoDB.freeSpacePositions = nil
     RaidBingoDB.bingoAnnounced = false
     RaidBingoDB.bingoMilestone = 0
     playerMarks = RaidBingoDB.playerMarks
@@ -283,6 +336,7 @@ end
 
 -- Mark a square as complete
 function addon:MarkSquare(squareIndex)
+    if self:IsFreeSpace(squareIndex) then return end
     -- Toggle the mark state
     if not playerMarks[squareIndex] then
         playerMarks[squareIndex] = true;
@@ -311,7 +365,7 @@ function addon:CheckLines()
         local isComplete = true;
         for col = 0, 4 do
             local index = row * 5 + col + 1;
-            if not playerMarks[index] then
+            if not self:IsFreeSpace(index) and not playerMarks[index] then
                 isComplete = false;
                 break;
             end
@@ -326,7 +380,7 @@ function addon:CheckLines()
         local isComplete = true;
         for row = 0, 4 do
             local index = row * 5 + col + 1;
-            if not playerMarks[index] then
+            if not self:IsFreeSpace(index) and not playerMarks[index] then
                 isComplete = false;
                 break;
             end
@@ -454,7 +508,7 @@ function addon:AutoMarkMatchingSquares(matcher)
     local marks = self:GetPlayerMarks()
     local changed = false
     for index, square in ipairs(squares) do
-        if index ~= 13 and not marks[index] and matcher(square) then
+        if not self:IsFreeSpace(index) and not marks[index] and matcher(square) then
             marks[index] = true
             changed = true
         end

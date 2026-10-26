@@ -54,11 +54,6 @@ function addon:GetSquareContent(squareIndex)
     return bingoCard.squares[squareIndex];
 end
 
--- Function to check if a square is the free space
-function addon:IsFreeSpace(squareIndex)
-    return squareIndex == bingoCard.centerSquareIndex;
-end
-
 -- Function to get card dimensions
 function addon:GetCardDimensions()
     return bingoCard.gridSize, bingoCard.gridSize;

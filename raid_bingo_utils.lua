@@ -22,12 +22,17 @@ function addon:ValidateCardData(cardData)
         return false
     end
 
-    -- Check that the center square is "Free Space"
-    if cardData.squares[13] ~= "Free Space" then
-        return false
+    if type(cardData.freeSpaces) == "table" then
+        local count = 0
+        for index = 1, 25 do
+            if cardData.freeSpaces[index] then
+                if cardData.squares[index] ~= "Free Space" then return false end
+                count = count + 1
+            end
+        end
+        return count == 3
     end
-
-    return true
+    return cardData.squares[13] == "Free Space"
 end
 
 -- Utility function to format text for display (truncating long texts)
@@ -74,7 +79,15 @@ end
 
 -- Utility function to check if a square is the free space
 function addon:IsFreeSpace(squareIndex)
-    return squareIndex == 13  -- Center square (1-based indexing)
+    local card = self.currentCard
+    if card then
+        if type(card.freeSpaces) == "table" then return card.freeSpaces[squareIndex] == true end
+        return squareIndex == 13
+    end
+    if RaidBingoDB and type(RaidBingoDB.freeSpacePositions) == "table" then
+        return RaidBingoDB.freeSpacePositions[squareIndex] == true
+    end
+    return squareIndex == 13
 end
 
 -- Utility function to get all completed lines for a player

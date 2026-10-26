@@ -25,7 +25,8 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] Saying a quoted phrase from a card square in raid/party chat marks that square.
 - [ ] `/rb generic` selects the raid-neutral pool; its squares do not name raids or bosses.
 - [ ] Raid-specific cards contain a random 2–8 squares for that raid and generic moments in the remaining spaces.
-- [ ] The center says FREE and appears marked green.
+- [ ] Each new card has exactly three FREE squares in randomized positions, with no row, column, or diagonal containing all three.
+- [ ] The three FREE positions stay the same when the card is hidden, reopened, or the UI reloads.
 - [ ] No card contains duplicate squares; shorter raid pools can include generic squares.
 - [ ] `/rb new` creates another card; `/rb reset` clears marks.
 
@@ -36,7 +37,7 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] Clicking a square changes only its red backdrop to pastel green; clicking it again restores red.
 - [ ] The separate frame remains visible and the text color stays the same in both marked and unmarked states.
 - [ ] The Automark based on events checkbox and label are centered together above the card.
-- [ ] The center cell matches the other cell dimensions, stays green, and centers `FREE`.
+- [ ] Each FREE cell matches the other cell dimensions, stays green, and centers `FREE`.
 - [ ] Marks remain after reloading the UI or relogging with the same card.
 - [ ] Verify completed-card behavior in the client.
 
