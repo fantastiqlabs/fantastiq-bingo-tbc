@@ -24,7 +24,7 @@ local named_encounters = {
 }
 
 local pools, pool_names = {}, {}
-for pool_name, section in source:gmatch("\n    ([%w_]+)%s*=%s*{\n(.-)\n    },") do
+for pool_name, section in source:gmatch("\n    ([%w_]+)%s*=%s*{\n(.-)\n    },?\n") do
     pools[pool_name] = { entries = {}, source = section }
     table.insert(pool_names, pool_name)
     for id, text in section:gmatch('{%s*id%s*=%s*"([^"]+)"%s*,%s*text%s*=%s*"([^"]+)"') do
