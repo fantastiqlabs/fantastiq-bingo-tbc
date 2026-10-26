@@ -404,56 +404,67 @@ function addon:HideUI()
     end
 end
 
--- Horizontal/vertical lines are supported in this MVP; each card announces bingo once.
+-- Announce each new bingo milestone once per card, even when earlier lines already won.
 function addon:CheckForCompletedLines()
-    if self.bingoAnnounced then return end
     local marks = self:GetPlayerMarks()
     local function marked(index) return index == 13 or marks[index] == true end
-    local complete = false
+    local completedLines = 0
     for row = 0, 4 do
         local full = true
         for col = 0, 4 do if not marked(row * 5 + col + 1) then full = false; break end end
-        if full then complete = true; break end
+        if full then completedLines = completedLines + 1 end
     end
-    if not complete then
-        for col = 0, 4 do
-            local full = true
-            for row = 0, 4 do if not marked(row * 5 + col + 1) then full = false; break end end
-            if full then complete = true; break end
-        end
+    for col = 0, 4 do
+        local full = true
+        for row = 0, 4 do if not marked(row * 5 + col + 1) then full = false; break end end
+        if full then completedLines = completedLines + 1 end
     end
-    if complete then
-        local quotes = {
-            "The loot council totally saw that.",
-            "Roll need on the confetti!",
-            "Even LeChuck couldn't sink that card!",
-            "A three-headed monkey approves!",
-            "Please remain calm; the card is on fire.",
-            "Guybrush has already claimed the victory grog.",
-            "Elaine is taking over the victory speech.",
-            "LeChuck's ghost ship just sounded its foghorn.",
-            "Murray approves, and that is deeply unsettling.",
-            "Stan is selling a map to your winning square.",
-            "The Voodoo Lady predicted this row over tea.",
-            "Carla wants a rematch against the whole card.",
-            "Meathook volunteered to paint the celebration banner.",
-            "The Sword Master has no comeback for that row.",
-            "Three parrots are squabbling over your prize.",
-            "A treasure map now marks your bingo as X.",
-            "The crew found treasure: one complete row.",
-            "That yell carried farther than a cannonball.",
-            "Somebody fetch grog; this card earned it.",
-            "LeChuck has been temporarily removed from the scoreboard.",
-            "The monkey has appointed itself loot master.",
-            "Guybrush swears this was all part of his plan.",
-            "The ship's crew is celebrating before checking the loot.",
-            "A voodoo charm says to keep clicking.",
-        }
-        self.bingoAnnounced = true
-        RaidBingoDB.bingoAnnounced = true
-        SendChatMessage("BINGO!!!!!!!!! " .. quotes[math.random(#quotes)], "YELL")
-        DoEmote("LAUGH")
+    local fullBoard = true
+    for index = 1, 25 do
+        if not marked(index) then fullBoard = false; break end
     end
+    local milestone = fullBoard and 3 or completedLines >= 2 and 2 or completedLines >= 1 and 1 or 0
+    RaidBingoDB = RaidBingoDB or {}
+    local previous = tonumber(RaidBingoDB.bingoMilestone) or (RaidBingoDB.bingoAnnounced and 1 or 0)
+    if milestone <= previous then return end
+
+    local announcements = {
+        [1] = "BINGO 1 ROW!",
+        [2] = "BINGO TWO ROWS!",
+        [3] = "BINGO FULL BOARD!",
+    }
+    local quotes = {
+        "The loot council totally saw that.",
+        "Roll need on the confetti!",
+        "Even LeChuck couldn't sink that card!",
+        "A three-headed monkey approves!",
+        "Please remain calm; the card is on fire.",
+        "Guybrush has already claimed the victory grog.",
+        "Elaine is taking over the victory speech.",
+        "LeChuck's ghost ship just sounded its foghorn.",
+        "Murray approves, and that is deeply unsettling.",
+        "Stan is selling a map to your winning square.",
+        "The Voodoo Lady predicted this row over tea.",
+        "Carla wants a rematch against the whole card.",
+        "Meathook volunteered to paint the celebration banner.",
+        "The Sword Master has no comeback for that row.",
+        "Three parrots are squabbling over your prize.",
+        "A treasure map now marks your bingo as X.",
+        "The crew found treasure: one complete row.",
+        "That yell carried farther than a cannonball.",
+        "Somebody fetch grog; this card earned it.",
+        "LeChuck has been temporarily removed from the scoreboard.",
+        "The monkey has appointed itself loot master.",
+        "Guybrush swears this was all part of his plan.",
+        "The ship's crew is celebrating before checking the loot.",
+        "A voodoo charm says to keep clicking.",
+    }
+    RaidBingoDB.bingoMilestone = milestone
+    RaidBingoDB.bingoAnnounced = true
+    self.bingoMilestone = milestone
+    self.bingoAnnounced = true
+    SendChatMessage(announcements[milestone] .. " " .. quotes[math.random(#quotes)], "YELL")
+    DoEmote("LAUGH")
 end
 
 -- Get the current player's marks from saved variables
