@@ -61,6 +61,10 @@ RaidBingoCatalog = {
         { id = "hyjal_013", text = "Defeat Archimonde", category = "boss", raid = "Mount Hyjal" },
         { id = "hyjal_014", text = "Get hit by Archimonde's Rain of Fire", category = "mechanic", raid = "Mount Hyjal" },
         { id = "hyjal_016", text = "Get hit by Archimonde's Shadow Bolt", category = "mechanic", raid = "Mount Hyjal" },
+        { id = "hyjal_017", text = "Get hit by Carrion Swarm", category = "mechanic", raid = "Mount Hyjal" },
+        { id = "hyjal_018", text = "Be put to sleep by Anetheron", category = "mechanic", raid = "Mount Hyjal" },
+        { id = "hyjal_019", text = "Be stunned by an Inferno landing", category = "mechanic", raid = "Mount Hyjal" },
+        { id = "hyjal_020", text = "Kill a Towering Infernal", category = "mob", raid = "Mount Hyjal" },
     },
 
     -- Serpentshrine Cavern
