@@ -10,7 +10,6 @@ import zipfile
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parent
 sys.path.insert(0, str(SCRIPT_DIR))
 from verify import ADDON_DIRECTORY, REQUIRED_FILES  # noqa: E402
 
@@ -115,7 +114,14 @@ class PackageVerificationTests(unittest.TestCase):
         self.write_archive(archive, entries=self.entries(VALID_TOC.replace("1.0.0-rc.1", "1.0.0-rc.2")))
         result = self.run_script("verify.py", archive)
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("filename version does not match", result.stderr)
+        self.assertIn("Expected archive filename", result.stderr)
+
+    def test_verifier_rejects_wrong_archive_name_with_matching_toc(self):
+        archive = self.root / "unrelated_1.0.0-rc.1.zip"
+        self.write_archive(archive)
+        result = self.run_script("verify.py", archive)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Expected archive filename", result.stderr)
 
     def test_verifier_checks_crc(self):
         archive = self.root / "raid_bingo_addon_1.0.0-rc.1.zip"

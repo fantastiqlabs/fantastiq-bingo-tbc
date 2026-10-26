@@ -2,23 +2,12 @@
 """Verify Raid Bingo ZIP structure, paths, CRCs, and TOC metadata."""
 
 import argparse
-import re
 import stat
 import sys
 import zipfile
 from pathlib import Path, PurePosixPath
 
-ADDON_DIRECTORY = "raid_bingo_addon"
-REQUIRED_FILES = frozenset({
-    "raid_bingo_addon.toc",
-    "raid_bingo_addon.lua",
-    "raid_bingo_card.lua",
-    "raid_bingo_ui.lua",
-    "raid_bingo_utils.lua",
-    "raid_bingo_catalog.lua",
-})
-EXPECTED_INTERFACE = "20506"
-VERSION_PATTERN = re.compile(r"^## Version:\s*(\S+)\s*$", re.MULTILINE)
+from package_contract import ADDON_DIRECTORY, EXPECTED_INTERFACE, REQUIRED_FILES, parse_toc_metadata
 
 
 class VerificationError(ValueError):
@@ -69,17 +58,15 @@ def verify_archive(archive_path):
                 toc_text = archive.read(toc_name).decode("utf-8")
             except (UnicodeDecodeError, KeyError) as error:
                 raise VerificationError("TOC is missing or is not valid UTF-8") from error
-            interfaces = re.findall(r"^## Interface:\s*(\S+)\s*$", toc_text, re.MULTILINE)
-            versions = VERSION_PATTERN.findall(toc_text)
-            if interfaces != [EXPECTED_INTERFACE]:
-                raise VerificationError(f"Expected exactly one interface version {EXPECTED_INTERFACE}; found {interfaces}")
-            if len(versions) != 1:
-                raise VerificationError(f"Expected exactly one TOC version; found {versions}")
-            version = versions[0]
-            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._+-]*", version):
-                raise VerificationError(f"Unsafe TOC version: {version!r}")
-            if not archive_path.stem.endswith(f"_{version}"):
-                raise VerificationError(f"Archive filename version does not match TOC version {version}")
+            try:
+                _, version = parse_toc_metadata(toc_text)
+            except ValueError as error:
+                raise VerificationError(str(error)) from error
+            expected_filename = f"{ADDON_DIRECTORY}_{version}.zip"
+            if archive_path.name != expected_filename:
+                raise VerificationError(
+                    f"Expected archive filename {expected_filename!r}, found {archive_path.name!r}"
+                )
             return version
     except zipfile.BadZipFile as error:
         raise VerificationError(f"Invalid ZIP archive: {error}") from error
