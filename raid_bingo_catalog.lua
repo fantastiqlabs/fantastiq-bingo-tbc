@@ -402,6 +402,16 @@ RaidBingoCatalog = {
         { id = "za_028", text = "Akil'zon's storm separates the group", category = "moment", raid = "Zul'Aman" },
         { id = "za_029", text = "Jan'alai's hatchlings scatter across the room", category = "add", raid = "Zul'Aman" },
         { id = "za_030", text = "Halazzi's lynx form gets a loud warning", category = "moment", raid = "Zul'Aman" },
+        { id = "za_031", text = "Nalorakk's bear form makes the tank move", category = "moment", raid = "Zul'Aman" },
+        { id = "za_032", text = "Akil'zon's storm separates the group", category = "moment", raid = "Zul'Aman" },
+        { id = "za_033", text = "Jan'alai's eggs are thrown by a raider", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_034", text = "Halazzi's lynx form gets a loud warning", category = "moment", raid = "Zul'Aman" },
+        { id = "za_035", text = "Malacrass's spirit bolts get a reaction", category = "moment", raid = "Zul'Aman" },
+        { id = "za_036", text = "Nalorakk's bear form makes the tank move", category = "moment", raid = "Zul'Aman" },
+        { id = "za_037", text = "Akil'zon's storm separates the group", category = "moment", raid = "Zul'Aman" },
+        { id = "za_038", text = "Jan'alai's eggs are thrown by a raider", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_039", text = "Halazzi's lynx form gets a loud warning", category = "moment", raid = "Zul'Aman" },
+        { id = "za_040", text = "Malacrass's spirit bolts get a reaction", category = "moment", raid = "Zul'Aman" },
     }
 }
 
