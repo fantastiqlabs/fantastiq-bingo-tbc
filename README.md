@@ -10,6 +10,10 @@ A lightweight, standalone bingo card addon for **World of Warcraft: The Burning 
 - Announces a completed line with `/yell BINGO!!!!!!!!!`, adds a random Monkey Island-inspired quip, and follows with `/laugh`.
 - Provides independent box-size, text-size, and whole-window scale controls, plus a minimap button to show or hide the card.
 
+## Catalog checks
+
+The catalog contains 110 raid-generic squares. Run `lua validate_catalog.lua` from the addon folder to check generic IDs, duplicate text, the 100-square minimum, the 50-character limit, and named raid or boss references.
+
 ## Install and play
 
 Download the latest [GitHub test release](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/releases/latest), extract `raid_bingo_addon` into your TBC Anniversary `Interface/AddOns` folder, and enable it in the AddOns list. See the [installation guide](INSTALL_GUIDE.md) for details.
