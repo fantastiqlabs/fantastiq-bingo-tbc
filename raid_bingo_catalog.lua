@@ -218,6 +218,12 @@ RaidBingoCatalog = {
         { id = "class_032", text = "A rogue kicks a dangerous cast", category = "class", role = "any" },
         { id = "class_033", text = "A priest dispels magic from a teammate", category = "class", role = "any" },
         { id = "class_034", text = "A warrior uses Shield Wall before a big hit", category = "class", role = "any" },
+        { id = "class_035", text = "A hunter Misdirects the pull to a tank", category = "class", role = "any" },
+        { id = "class_036", text = "A mage removes a curse from a teammate", category = "class", role = "any" },
+        { id = "class_037", text = "A priest shields the tank before a big hit", category = "class", role = "any" },
+        { id = "class_038", text = "A paladin casts Hand of Protection on a healer", category = "class", role = "any" },
+        { id = "class_039", text = "A warlock banishes an elemental add", category = "class", role = "any" },
+        { id = "class_040", text = "A druid gives Innervate to a healer", category = "class", role = "any" },
     },
 
     -- General mechanics
@@ -526,6 +532,18 @@ RaidBingoCatalog = {
         { id = "za_030", text = "Halazzi's lynx form gets a loud warning", category = "moment", raid = "Zul'Aman" },
         { id = "za_031", text = "A rescued hostage extends the event timer", category = "moment", raid = "Zul'Aman" },
         { id = "za_032", text = "Amani War Bear is earned after timed rescue", category = "moment", raid = "Zul'Aman" },
+        { id = "za_033", text = "Nalorakk's Deafening Roar silences the raid", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_034", text = "Nalorakk's Rend Flesh leaves the tank bleeding", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_035", text = "Nalorakk's Brutal Swipe hits both tanks", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_036", text = "Akil'zon's Static Disruption hits nearby players", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_037", text = "Akil'zon's Gust of Wind lifts a raider", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_038", text = "Jan'alai turns toward a player for Flame Breath", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_039", text = "Jan'alai breaks the remaining eggs at 35%", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_040", text = "Hatchlings stack Flame Buffet on their target", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_041", text = "Halazzi summons a Corrupted Lightning Totem", category = "add", raid = "Zul'Aman" },
+        { id = "za_042", text = "Halazzi's Transfigure heals him on phase change", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_043", text = "Zul'jin's Creeping Paralysis needs a dispel", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_044", text = "Zul'jin's Grievous Throw needs a full heal", category = "mechanic", raid = "Zul'Aman" },
     }
 }
 
