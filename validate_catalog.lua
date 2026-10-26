@@ -17,6 +17,19 @@ end
 
 local entries, ids, texts = 0, {}, {}
 local errors = {}
+local named_encounters = {
+    "karazhan", "gruul's lair", "magtheridon's lair", "serpentshrine cavern",
+    "tempest keep", "black temple", "mount hyjal", "zul'aman", "sunwell plateau",
+    "attumen", "moroes", "maiden of virtue", "curator", "shade of aran",
+    "terestian illhoof", "netherspite", "malchezaar", "maulgar", "gruul",
+    "magtheridon", "hydross", "lurker below", "leotheras", "karathress",
+    "morogrim", "vashj", "al'ar", "void reaver", "solarian", "kael'thas",
+    "rage winterchill", "anetheron", "kaz'rogal", "azgalor", "archimonde",
+    "naj'entus", "supremus", "akama", "teron gorefiend", "gurtogg bloodboil",
+    "reliquary of souls", "mother shahraz", "illidari council", "illidan",
+    "nalorakk", "akil'zon", "jan'alai", "halazzi", "malacrass", "zul'jin",
+    "kalecgos", "brutallus", "felmyst", "eredar twins", "m'uru", "kil'jaeden",
+}
 for id, text in section:gmatch('{%s*id%s*=%s*"([^"]+)"%s*,%s*text%s*=%s*"([^"]+)"') do
     entries = entries + 1
     if not id:match("^generic_%d%d%d$") then
@@ -31,6 +44,15 @@ for id, text in section:gmatch('{%s*id%s*=%s*"([^"]+)"%s*,%s*text%s*=%s*"([^"]+)
         table.insert(errors, "Duplicate text: " .. text)
     end
     texts[normalized] = true
+    if #text > 50 then
+        table.insert(errors, "Text exceeds 50 characters: " .. id .. " (" .. #text .. ")")
+    end
+    for _, name in ipairs(named_encounters) do
+        if normalized:find(name, 1, true) then
+            table.insert(errors, "Named raid or boss in generic text: " .. id .. " (" .. name .. ")")
+            break
+        end
+    end
 end
 
 if entries < 100 then
