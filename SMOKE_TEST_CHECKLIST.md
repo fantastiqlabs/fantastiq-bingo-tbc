@@ -38,9 +38,7 @@ This test is for the Burning Crusade Classic Anniversary client with interface `
 - [ ] The Automark based on events checkbox and label are centered together above the card.
 - [ ] The center cell matches the other cell dimensions, stays green, and centers `FREE`.
 - [ ] Marks remain after reloading the UI or relogging with the same card.
-- [ ] Completing a horizontal or vertical line yells `BINGO!!!!!!!!!` with one randomly selected Monkey Island-themed quip.
-- [ ] The addon performs `/laugh` after the yell.
-- [ ] A card yells only once; a new card can announce again.
+- [ ] Verify completed-card behavior in the client.
 
 ## Report
 

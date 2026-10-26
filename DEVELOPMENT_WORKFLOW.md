@@ -21,7 +21,7 @@ python3 scripts/verify.py /tmp/raid-bingo/raid_bingo_addon_<version>.zip
 
 The catalog validator checks generic IDs and text for duplicates, a minimum of 100 generic squares, a 50-character limit, and named raid/boss references. The packager creates a deterministic ZIP from the required file list; the verifier checks its exact contents, safe paths, TOC metadata, and CRC. These checks do not exercise the WoW UI or prove client compatibility.
 
-For the in-game portion, use the existing [smoke-test checklist](SMOKE_TEST_CHECKLIST.md) rather than maintaining a second copy here. It covers install/load, raid selectors, sizing, saved settings, automark, square state, and bingo announcements.
+For the in-game portion, use the existing [smoke-test checklist](SMOKE_TEST_CHECKLIST.md) rather than maintaining a second copy here. It covers install/load, raid selectors, sizing, saved settings, automark, and square state.
 
 ## Version and release gates
 

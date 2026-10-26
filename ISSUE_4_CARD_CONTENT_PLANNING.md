@@ -9,7 +9,6 @@ Cards are generated from curated raid-specific and raid-generic pools. A raid-sp
 - Players can mark and unmark any non-center cell; marks are local and self-reported.
 - The free center counts automatically.
 - Horizontal and vertical lines count; diagonals do not.
-- A card announces bingo once after a completed line, using `/yell` and a random quote, then `/laugh`.
 - Optional automark matches only supported combat-log or chat observations against the active card. Ambiguous social moments remain manual.
 
 ## Lifecycle

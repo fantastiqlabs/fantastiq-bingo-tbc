@@ -10,6 +10,5 @@ The GitHub Actions release workflow assigns the next `v1.0.0-rc.N` version to ea
 - The Illidan blue-flame square uses spell ID `40836`; text-driven matching handles other directly named hit squares when the combat log source and spell name match the card wording.
 - Unobservable or subjective moments (such as forgetting supplies) remain manual. This is deliberate because combat/chat data cannot reliably prove them.
 - Cell colors use separate pastel red/green backdrops and a separate border texture; marking changes only the backdrop. The automark checkbox and its label are positioned as a centered group.
-- Completing bingo yells the random quote and then performs `/laugh`.
 - `/eventtrace` is useful as a diagnostic while investigating client events; addon code cannot query its displayed event history. A TBC-compatible combat-log viewer confirms that `CombatLogGetCurrentEventInfo()` is used for TBC combat-log inspection.
 - The candidate has not been tested inside WoW. Verify selectors, minimap click, checkbox persistence, a known event rule, label fitting, and no Lua errors before treating it as ready for group play.
