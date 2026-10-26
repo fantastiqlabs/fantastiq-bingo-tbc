@@ -1,83 +1,94 @@
 #!/usr/bin/env python3
+"""Create a deterministic, versioned Raid Bingo addon ZIP."""
 
-"""
-Raid Bingo Addon Packaging Script
-
-Creates a versioned ZIP archive of the addon files for the addon release workflow.
-This script does not perform in-game verification - that will be done after issue #9 integration.
-
-Uses Python standard library zipfile module, no external dependencies.
-"""
-
-import os
+import argparse
+import hashlib
+import re
 import sys
 import zipfile
-import argparse
 from pathlib import Path
 
-def get_version_from_toc():
-    """Extract version from addon TOC file."""
-    try:
-        with open('raid_bingo_addon.toc', 'r') as f:
-            for line in f:
-                if line.startswith('## Version:'):
-                    return line.split()[2]
-    except FileNotFoundError:
-        print("Error: raid_bingo_addon.toc not found")
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error reading TOC file: {e}")
-        sys.exit(1)
+ADDON_DIRECTORY = "raid_bingo_addon"
+REQUIRED_FILES = (
+    "raid_bingo_addon.toc",
+    "raid_bingo_addon.lua",
+    "raid_bingo_card.lua",
+    "raid_bingo_ui.lua",
+    "raid_bingo_utils.lua",
+    "raid_bingo_catalog.lua",
+)
+TOC_VERSION = re.compile(r"^## Version:\s*(\S+)\s*$", re.MULTILINE)
 
-    print("Error: Could not determine version from TOC file")
-    sys.exit(1)
+
+def get_version_from_toc(toc_path=Path("raid_bingo_addon.toc")):
+    """Return the single safe addon version declared in the TOC."""
+    try:
+        contents = toc_path.read_text(encoding="utf-8")
+    except OSError as error:
+        raise ValueError(f"Could not read {toc_path}: {error}") from error
+    versions = TOC_VERSION.findall(contents)
+    if len(versions) != 1:
+        raise ValueError("TOC must contain exactly one ## Version field")
+    version = versions[0]
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._+-]*", version):
+        raise ValueError(f"Unsafe TOC version: {version!r}")
+    return version
+
+
+def calculate_file_hash(file_path):
+    """Calculate a SHA256 hash for optional package diagnostics."""
+    digest = hashlib.sha256()
+    with open(file_path, "rb") as source:
+        for chunk in iter(lambda: source.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def package(output_dir, name=ADDON_DIRECTORY, include_hashes=False):
+    """Build an archive with fixed names, ordering, metadata, and timestamps."""
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", name):
+        raise ValueError("Package name must be a simple filename component")
+    version = get_version_from_toc()
+    for file_name in REQUIRED_FILES:
+        if not Path(file_name).is_file():
+            raise ValueError(f"Required file not found: {file_name}")
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    archive_path = output_dir / f"{name}_{version}.zip"
+    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+        for file_name in sorted(REQUIRED_FILES):
+            info = zipfile.ZipInfo(f"{ADDON_DIRECTORY}/{file_name}", date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 3
+            info.external_attr = (0o100644 & 0xFFFF) << 16
+            info.flag_bits = 0
+            data = Path(file_name).read_bytes()
+            archive.writestr(info, data, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+            if include_hashes:
+                print(f"  SHA256 {file_name}: {hashlib.sha256(data).hexdigest()}")
+
+    return archive_path, version
+
 
 def main():
-    parser = argparse.ArgumentParser(description='Package Raid Bingo addon')
-    parser.add_argument('-o', '--output', default='/tmp', help='Output directory (default: /tmp)')
-    parser.add_argument('-n', '--name', default='raid_bingo_addon', help='Package name (default: raid_bingo_addon)')
-
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-o", "--output", default="/tmp", help="Output directory (default: /tmp)")
+    parser.add_argument("-n", "--name", default=ADDON_DIRECTORY, help="Archive filename prefix")
+    parser.add_argument("--no-hash", action="store_true", help="Skip optional SHA256 diagnostics")
     args = parser.parse_args()
 
-    # Get version from TOC
-    version = get_version_from_toc()
+    try:
+        archive_path, version = package(args.output, args.name, include_hashes=not args.no_hash)
+    except (OSError, ValueError, zipfile.BadZipFile) as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
+
     print(f"Using version: {version}")
-
-    # Create output directory if it doesn't exist
-    output_dir = Path(args.output)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # Define files to include
-    addon_files = [
-        'raid_bingo_addon.toc',
-        'raid_bingo_addon.lua',
-        'raid_bingo_card.lua',
-        'raid_bingo_ui.lua',
-        'raid_bingo_utils.lua',
-        'raid_bingo_catalog.lua'
-    ]
-
-    # Verify all files exist
-    for file in addon_files:
-        if not os.path.exists(file):
-            print(f"Error: Required file not found: {file}")
-            sys.exit(1)
-
-    # Create package name with version
-    archive_name = f"{args.name}_{version}.zip"
-    archive_path = output_dir / archive_name
-
-    # Create the ZIP archive
-    print(f"Creating archive: {archive_path}")
-
-    with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        # Add files to the archive with the addon directory structure
-        for file in addon_files:
-            # Add file to archive with path inside the addon directory
-            zipf.write(file, arcname=f"{args.name}/{file}")
-
     print(f"Package created successfully: {archive_path}")
-    print("Note: This package has not been verified in-game. Archive validation does not replace in-game verification.")
+    print("This archive has not been verified in-game; packaging checks do not replace client testing.")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
