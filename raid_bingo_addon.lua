@@ -13,6 +13,17 @@ local playerMarks = {};
 -- Current deck selection (will be set based on raid type)
 local currentDeck = "raid_generic";
 local eventFrame
+local AUTO_DECK_MINIMUM = 22
+local AUTO_DECKS = {
+    { label = "Black Temple Auto", value = "auto_black_temple", raid = "black_temple" },
+    { label = "Mount Hyjal Auto", value = "auto_mount_hyjal", raid = "mount_hyjal" },
+    { label = "Serpentshrine Cavern Auto", value = "auto_ssc", raid = "ssc" },
+    { label = "Tempest Keep Auto", value = "auto_tempest_keep", raid = "tempest_keep" },
+    { label = "Zul'Aman Auto", value = "auto_zul_aman", raid = "zul_aman" },
+}
+local AUTO_DECK_RAIDS = {}
+for _, option in ipairs(AUTO_DECKS) do AUTO_DECK_RAIDS[option.value] = option.raid end
+local isAutoMarkableSquare
 
 local function shareWinningLine(a, b, c)
     local rowA, colA = math.floor((a - 1) / 5), (a - 1) % 5
@@ -42,6 +53,22 @@ function addon:ApplyRandomFreeSpaces(card)
     return card
 end
 
+local function collectUniqueSquares(source, seenIds, seenText, eligible)
+    seenIds = seenIds or {}
+    seenText = seenText or {}
+    local squares = {}
+    for _, square in ipairs(source or {}) do
+        local textKey = square and square.text and string.lower(square.text)
+        if square and square.id and textKey and not seenIds[square.id] and not seenText[textKey]
+            and (not eligible or eligible(square)) then
+            seenIds[square.id] = true
+            seenText[textKey] = true
+            table.insert(squares, square)
+        end
+    end
+    return squares
+end
+
 -- Initialize saved state and create the interface once the addon files are loaded.
 function addon:OnEnable()
     RaidBingoDB = RaidBingoDB or {}
@@ -50,6 +77,15 @@ function addon:OnEnable()
 
     if RaidBingoCatalog and RaidBingoCatalog[RaidBingoDB.selectedDeck] then
         currentDeck = RaidBingoDB.selectedDeck
+    elseif AUTO_DECK_RAIDS[RaidBingoDB.selectedDeck] then
+        local count, available = self:GetAutoDeckStatus(RaidBingoDB.selectedDeck)
+        if available then
+            currentDeck = RaidBingoDB.selectedDeck
+        else
+            print(string.format("That Auto deck is unavailable: it has %d of %d required verified event squares. Switched to Raid Generic.", count, AUTO_DECK_MINIMUM))
+            RaidBingoDB.selectedDeck = "raid_generic"
+            currentDeck = "raid_generic"
+        end
     end
 
     self:CreateUI()
@@ -61,8 +97,11 @@ end
 -- Generate a no-duplicate card. Raid-specific decks mix a random 2–8 raid
 -- squares with generic moments; the dedicated generic deck stays raid-neutral.
 function addon:GenerateCardFromCatalog(deckName)
-    local deck = RaidBingoCatalog and RaidBingoCatalog[deckName]
+    local autoRaid = AUTO_DECK_RAIDS[deckName]
+    local catalogDeckName = autoRaid or deckName
+    local deck = RaidBingoCatalog and RaidBingoCatalog[catalogDeckName]
     if type(deck) ~= "table" then
+        if autoRaid then return nil end
         print("Unknown deck; using the raid-generic pool.")
         deckName = "raid_generic"
         deck = RaidBingoCatalog and RaidBingoCatalog[deckName]
@@ -71,23 +110,10 @@ function addon:GenerateCardFromCatalog(deckName)
         return self:GetDefaultCard()
     end
 
-    local function collectUniqueSquares(source, seenIds, seenText)
-        seenIds = seenIds or {}
-        seenText = seenText or {}
-        local squares = {}
-        for _, square in ipairs(source or {}) do
-            local textKey = square and square.text and string.lower(square.text)
-            if square and square.id and textKey and not seenIds[square.id] and not seenText[textKey] then
-                seenIds[square.id] = true
-                seenText[textKey] = true
-                table.insert(squares, square)
-            end
-        end
-        return squares
-    end
-
     local pool = {}
-    if deckName == "raid_generic" then
+    if autoRaid then
+        pool = collectUniqueSquares(deck, nil, nil, isAutoMarkableSquare)
+    elseif deckName == "raid_generic" then
         pool = collectUniqueSquares(deck)
     else
         -- Keep raid cards mostly generic, with a random handful of encounter
@@ -106,13 +132,13 @@ function addon:GenerateCardFromCatalog(deckName)
         local genericPool = collectUniqueSquares(RaidBingoCatalog.raid_generic, seenIds, seenText)
         self:ShuffleTable(genericPool)
         for _, square in ipairs(genericPool) do
-            if #pool >= 24 then break end
+            if #pool >= AUTO_DECK_MINIMUM then break end
             table.insert(pool, square)
         end
 
         -- If the generic catalog is ever too small, fill remaining spaces with
         -- unused raid squares while still preventing duplicate IDs and text.
-        if #pool < 24 then
+        if #pool < AUTO_DECK_MINIMUM then
             for i = specificCount + 1, #raidPool do
                 local square = raidPool[i]
                 local textKey = string.lower(square.text)
@@ -120,13 +146,14 @@ function addon:GenerateCardFromCatalog(deckName)
                     table.insert(pool, square)
                     seenIds[square.id] = true
                     seenText[textKey] = true
-                    if #pool >= 24 then break end
+                    if #pool >= AUTO_DECK_MINIMUM then break end
                 end
             end
         end
     end
-    if #pool < 24 then
+    if #pool < AUTO_DECK_MINIMUM then
         print("This deck does not contain enough unique squares to make a full card.")
+        if autoRaid then return nil end
         return self:GetDefaultCard()
     end
 
@@ -291,8 +318,28 @@ function addon:GetCurrentDeck()
     return currentDeck
 end
 
+function addon:GetAutoDeckOptions()
+    return AUTO_DECKS
+end
+
+function addon:GetAutoDeckStatus(deckName)
+    local raid = AUTO_DECK_RAIDS[deckName]
+    local pool = RaidBingoCatalog and raid and RaidBingoCatalog[raid]
+    local count = #collectUniqueSquares(pool, nil, nil, isAutoMarkableSquare)
+    return count, count >= AUTO_DECK_MINIMUM, AUTO_DECK_MINIMUM
+end
+
 function addon:SelectDeck(deckName)
-    if not RaidBingoCatalog or not RaidBingoCatalog[deckName] then return false end
+    local autoRaid = AUTO_DECK_RAIDS[deckName]
+    if autoRaid then
+        local count, available = self:GetAutoDeckStatus(deckName)
+        if not available then
+            print(string.format("%s Auto is unavailable: %d of %d verified event squares.", deckName, count, AUTO_DECK_MINIMUM))
+            return false
+        end
+    elseif not RaidBingoCatalog or not RaidBingoCatalog[deckName] then
+        return false
+    end
     currentDeck = deckName
     RaidBingoDB.selectedDeck = deckName
     RaidBingoDB.playerMarks = {}
@@ -304,6 +351,7 @@ function addon:SelectDeck(deckName)
     self.bingoMilestone = 0
     self.bingoAnnounced = false
     self:GenerateAndDisplayCard(true)
+    if autoRaid then self:SetAutoMarkEnabled(true) end
     return true
 end
 
@@ -471,6 +519,18 @@ local function SquareMatchesCombatEvent(square, subevent, sourceName, destName, 
     return sourceTerm ~= nil and abilityTerm ~= nil
         and ContainsEventPhrase(sourceName, sourceTerm)
         and ContainsEventPhrase(spellName, abilityTerm)
+end
+
+isAutoMarkableSquare = function(square)
+    if type(square) ~= "table" or type(square.text) ~= "string" then return false end
+    if GetNamedDeathTarget(square) then return true end
+
+    local rule = square.autoMark
+    if type(rule) == "table" and type(rule.spellIds) == "table" and #rule.spellIds > 0 then return true end
+
+    local sourceTerm, abilityTerm = ParseHitSquare(square.text)
+    if sourceTerm and abilityTerm then return true end
+    return square.text:match("['\"]([^'\"]+)['\"]") ~= nil
 end
 
 function addon:SetAutoMarkEnabled(enabled)
