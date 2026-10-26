@@ -70,7 +70,7 @@ RaidBingoCatalog = {
     -- Serpentshrine Cavern
     ssc = {
         { id = "ssc_001", text = "Defeat Fathom-Lord Karathress", category = "boss", raid = "Serpentshrine Cavern" },
-        { id = "ssc_002", text = "Get hit by Karathress's Watery Grave", category = "mechanic", raid = "Serpentshrine Cavern" },
+        { id = "ssc_002", text = "Get hit by Morogrim's Watery Grave", category = "mechanic", raid = "Serpentshrine Cavern" },
         { id = "ssc_003", text = "Kill a Coilfang Ambusher", category = "mob", raid = "Serpentshrine Cavern" },
         { id = "ssc_004", text = "Defeat Lady Vashj", category = "boss", raid = "Serpentshrine Cavern" },
         { id = "ssc_005", text = "Get hit by Vashj's Lightning Bolt", category = "mechanic", raid = "Serpentshrine Cavern" },
