@@ -137,6 +137,15 @@ RaidBingoCatalog = {
         { id = "ssc_039", text = "Vashj's Shock Blast stuns her tank", category = "mechanic", raid = "Serpentshrine Cavern" },
         { id = "ssc_040", text = "Vashj Entangles nearby players", category = "mechanic", raid = "Serpentshrine Cavern" },
         { id = "ssc_041", text = "A Tainted Core carrier is rooted in place", category = "mechanic", raid = "Serpentshrine Cavern" },
+        { id = "ssc_042", text = "Kill a Coilfang Beast-Tamer", category = "mob", raid = "Serpentshrine Cavern" },
+        { id = "ssc_043", text = "Kill a Coilfang Hate-Screamer", category = "mob", raid = "Serpentshrine Cavern" },
+        { id = "ssc_044", text = "Kill a Serpentshrine Sporebat", category = "mob", raid = "Serpentshrine Cavern" },
+        { id = "ssc_045", text = "Kill an Underbog Colossus", category = "mob", raid = "Serpentshrine Cavern" },
+        { id = "ssc_046", text = "Kill a Vashj'ir Honor Guard", category = "mob", raid = "Serpentshrine Cavern" },
+        { id = "ssc_047", text = "Kill a Coilfang Priestess", category = "mob", raid = "Serpentshrine Cavern" },
+        { id = "ssc_048", text = "Kill a Coilfang Shatterer", category = "mob", raid = "Serpentshrine Cavern" },
+        { id = "ssc_049", text = "Kill a Greyheart Technician", category = "mob", raid = "Serpentshrine Cavern" },
+        { id = "ssc_050", text = "Kill a Greyheart Tidecaller", category = "mob", raid = "Serpentshrine Cavern" },
     },
 
     -- Tempest Keep
