@@ -192,6 +192,17 @@ RaidBingoCatalog = {
         { id = "tk_040", text = "Sanguinar fears the raid with Bellowing Roar", category = "mechanic", raid = "Tempest Keep" },
         { id = "tk_041", text = "Shock Barrier prevents interrupting Kael'thas", category = "mechanic", raid = "Tempest Keep" },
         { id = "tk_042", text = "Netherbeam chains between nearby players", category = "mechanic", raid = "Tempest Keep" },
+        { id = "tk_043", text = "Kill an Astromancer", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_044", text = "Kill a Star Scryer", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_045", text = "Kill a Bloodwarder Marshal", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_046", text = "Kill a Bloodwarder Squire", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_047", text = "Kill a Phoenix-Hawk Hatchling", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_048", text = "Kill a Crystalcore Devastator", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_049", text = "Kill a Crystalcore Mechanic", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_050", text = "Kill a Tempest-Smith", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_051", text = "Kill an Astromancer Lord", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_052", text = "Kill a Nether Scryer", category = "mob", raid = "Tempest Keep" },
+        { id = "tk_053", text = "Kill a Crimson Hand Battle Mage", category = "mob", raid = "Tempest Keep" },
     },
 
     -- Class/Role specific
