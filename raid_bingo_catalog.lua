@@ -544,6 +544,12 @@ RaidBingoCatalog = {
         { id = "za_042", text = "Halazzi's Transfigure heals him on phase change", category = "mechanic", raid = "Zul'Aman" },
         { id = "za_043", text = "Zul'jin's Creeping Paralysis needs a dispel", category = "mechanic", raid = "Zul'Aman" },
         { id = "za_044", text = "Zul'jin's Grievous Throw needs a full heal", category = "mechanic", raid = "Zul'Aman" },
+        { id = "za_045", text = "Defeat Nalorakk", category = "boss", raid = "Zul'Aman" },
+        { id = "za_046", text = "Defeat Akil'zon", category = "boss", raid = "Zul'Aman" },
+        { id = "za_047", text = "Defeat Jan'alai", category = "boss", raid = "Zul'Aman" },
+        { id = "za_048", text = "Defeat Halazzi", category = "boss", raid = "Zul'Aman" },
+        { id = "za_049", text = "Defeat Hex Lord Malacrass", category = "boss", raid = "Zul'Aman" },
+        { id = "za_050", text = "Defeat Zul'jin", category = "boss", raid = "Zul'Aman" },
     }
 }
 
