@@ -55,6 +55,9 @@ RaidBingoCatalog = {
         { id = "bt_054", text = "Fatal Attraction links three raiders", category = "mechanic", raid = "Black Temple" },
         { id = "bt_055", text = "A Shahraz beam jumps between players", category = "mechanic", raid = "Black Temple" },
         { id = "bt_056", text = "The Illidari Council shares one health pool", category = "mechanic", raid = "Black Temple" },
+        { id = "bt_057", text = "Kill an Illidari Fearbringer", category = "mob", raid = "Black Temple" },
+        { id = "bt_058", text = "Kill an Illidari Defiler", category = "mob", raid = "Black Temple" },
+        { id = "bt_059", text = "Kill an Ashtongue Stormcaller", category = "mob", raid = "Black Temple" },
     },
 
     -- Mount Hyjal
