@@ -1,4 +1,4 @@
-# Issue 7: Implementation Roadmap for TBC Anniversary Raid Bingo Addon
+# Issue 7: Implementation Roadmap for Fantastiq Bingo TBC
 
 ## Summary of Decisions
 
@@ -12,7 +12,7 @@ Target Burning Crusade Classic Anniversary with TOC interface `20506`. The addon
 Each player selects a raid deck and receives a locally randomized card. Card layout and marks persist in that player's SavedVariables. A new card is generated with `/rb new`; marks can be cleared with `/rb reset`. No addon messages are sent and no participant's marks are visible to others.
 
 ### Portal Boundary
-The Raid Bingo addon is a standalone tool. It does not connect to Hello There Guild, share identity, or send card/mark data to a service. Any future portal handoff or shared raid card requires a new owner-approved design covering identity, consent, data retention, and compatibility.
+Fantastiq Bingo TBC is a standalone tool. It does not connect to Guildtastiq, share identity, or send card/mark data to a service. Any future portal handoff or shared raid card requires a new owner-approved design covering identity, consent, data retention, and compatibility.
 
 ### Release Workflow
 Keep the addon standalone in this repository with Lua modules and `raid_bingo_addon.toc` at the archive root. Target TOC interface `20506`. Publish versioned GitHub prereleases for owner testing. A prerelease is not a stable release or proof of in-client compatibility.
@@ -29,17 +29,17 @@ The repository already contains an RC10 test candidate. Keep planning tied to th
 - The minimap show/hide button.
 
 ### Next work
-1. Complete the RC10 client smoke test in [issue #23](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/23), using `SMOKE_TEST_CHECKLIST.md`. Until then, describe RC10 as a test candidate, not as client-verified or release-ready.
+1. Complete the RC10 client smoke test in [issue #23](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/issues/23), using `SMOKE_TEST_CHECKLIST.md`. Until then, describe RC10 as a test candidate, not as client-verified or release-ready.
 2. Turn each failed smoke-test item into one focused implementation issue. Give each issue an outcome, acceptance criteria, a narrow file/scope boundary, validation steps, and explicit dependencies. Do not create a broad catch-all issue.
 3. Keep compatibility, state migration, and package integrity ahead of optional UI polish. Add new automark rules only for events the client exposes and that can be tested; keep subjective bingo moments manual.
 4. After the owner test passes and any resulting fixes are merged, use the existing release workflow to publish the next version. A stable release still requires successful package checks and a clean client smoke test.
 
 ### Existing issue map
-- [Issue #1](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/1): MVP boundaries and core product behavior.
-- [Issue #4](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/4): bingo content, card rules, and raid lifecycle.
-- [Issue #5](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/5): standalone addon boundary; no guild-portal integration is needed.
-- [Issue #6](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/6): development, test, packaging, and release workflow.
-- [Issue #23](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/23): required owner verification in the TBC Anniversary client.
+- [Issue #1](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/issues/1): MVP boundaries and core product behavior.
+- [Issue #4](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/issues/4): bingo content, card rules, and raid lifecycle.
+- [Issue #5](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/issues/5): standalone addon boundary; no guild-portal integration is needed.
+- [Issue #6](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/issues/6): development, test, packaging, and release workflow.
+- [Issue #23](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/issues/23): required owner verification in the TBC Anniversary client.
 
 The issue bodies contain the source decisions and task details. If a decision is already recorded there, do not ask the owner to repeat it. There are no agent-blocking dependencies for writing this roadmap; client verification remains an owner task because it requires the game client.
 

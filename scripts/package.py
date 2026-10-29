@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a deterministic, versioned Raid Bingo addon ZIP."""
+"""Create a deterministic, versioned Fantastiq Bingo TBC ZIP."""
 
 import argparse
 import hashlib

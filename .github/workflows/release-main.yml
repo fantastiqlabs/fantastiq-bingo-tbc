@@ -76,14 +76,14 @@ jobs:
           set -euo pipefail
           archive="dist/raid_bingo_addon_${VERSION}.zip"
           gh release create "$TAG" "$archive" \
-            --title "Raid Bingo ${VERSION}" \
+            --title "Fantastiq Bingo TBC ${VERSION}" \
             --generate-notes \
             --prerelease
           url="$(gh release view "$TAG" --json url --jq .url)"
           body="$(gh release view "$TAG" --json body --jq .body)"
           delimiter="release_notes_${GITHUB_RUN_ID}"
           {
-            echo "title=Raid Bingo ${VERSION}"
+            echo "title=Fantastiq Bingo TBC ${VERSION}"
             echo "tag=${TAG}"
             echo "url=${url}"
             echo "body<<${delimiter}"
@@ -95,7 +95,7 @@ jobs:
     needs: package
     uses: ./.github/workflows/discord-release-reusable.yml
     with:
-      project_name: Raid Bingo
+      project_name: Fantastiq Bingo TBC
       release_title: ${{ needs.package.outputs.release_title }}
       release_tag: ${{ needs.package.outputs.release_tag }}
       release_url: ${{ needs.package.outputs.release_url }}

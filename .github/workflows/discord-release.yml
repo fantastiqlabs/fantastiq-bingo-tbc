@@ -11,6 +11,6 @@ jobs:
   announce:
     uses: ./.github/workflows/discord-release-reusable.yml
     with:
-      project_name: "Raid Bingo"
+      project_name: "Fantastiq Bingo TBC"
     secrets:
       FANTASTIQLABS_DISCORD_WEBHOOK: ${{ secrets.FANTASTIQLABS_DISCORD_WEBHOOK }}

@@ -1,4 +1,4 @@
-# Raid Bingo Addon implementation candidate
+# Fantastiq Bingo TBC implementation candidate
 
 ## Status: candidate for owner smoke testing; in-game validation pending
 

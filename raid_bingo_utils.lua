@@ -100,7 +100,7 @@ end
 
 -- Utility function to display help information
 function addon:ShowHelp()
-    print("=== Raid Bingo Addon Help ===")
+    print("=== Fantastiq Bingo TBC Help ===")
     print("/rb or /raidbingo - Toggle the bingo card UI")
     print("/rbreset - Reset your marks")
     print("=============================")

@@ -1,10 +1,10 @@
-# Raid Bingo Addon Smoke Test Checklist
+# Fantastiq Bingo TBC Smoke Test Checklist
 
 This test is for the Burning Crusade Classic Anniversary client with interface `20506`. The addon has not yet been verified in-game.
 
 ## Install and load
 
-- [ ] The main window title reads **Hello There Raid Bingo!**.
+- [ ] The main window title reads **Fantastiq Bingo TBC**.
 - [ ] Extract `raid_bingo_addon` directly under the client's `Interface/AddOns` folder.
 - [ ] Enable Raid Bingo from the AddOns list.
 - [ ] Load into the world without Lua errors.

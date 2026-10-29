@@ -1,6 +1,6 @@
 # Raid Bingo Development and Release Workflow
 
-Raid Bingo is a standalone World of Warcraft: The Burning Crusade Classic Anniversary addon. Its source and release process do not depend on the HelloThereGuild portal.
+Fantastiq Bingo TBC is a standalone World of Warcraft: The Burning Crusade Classic Anniversary addon. Its source and release process do not depend on Guildtastiq.
 
 ## Source and client baseline
 
