@@ -17,8 +17,18 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  choose-runner:
+    uses: ./.github/workflows/select-runner.yml
+    with:
+      hosted_budget_usd: ${{ vars.ACTIONS_HOSTED_BUDGET_USD }}
+      hosted_reserve_usd: ${{ vars.ACTIONS_HOSTED_RESERVE_USD }}
+    secrets:
+      ACTIONS_BILLING_TOKEN: ${{ secrets.ACTIONS_BILLING_TOKEN }}
+
   package:
-    runs-on: ubuntu-latest
+    needs: choose-runner
+    runs-on: ${{ fromJSON(needs.choose-runner.outputs.runs_on) }}
+    container: ubuntu:24.04
     outputs:
       release_title: ${{ steps.release.outputs.title }}
       release_tag: ${{ steps.release.outputs.tag }}
@@ -31,8 +41,8 @@ jobs:
 
       - name: Install Lua validator
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes lua5.4
+          apt-get update
+          apt-get install --yes lua5.4
 
       - name: Validate generic catalog
         run: lua5.4 validate_catalog.lua
