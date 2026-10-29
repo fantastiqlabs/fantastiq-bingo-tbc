@@ -69,7 +69,7 @@ jobs:
                     product: 'Actions',
                   });
                   const response = await fetch(
-                    `https://api.github.com/users/${process.env.GITHUB_OWNER}/settings/billing/usage/summary?${query}`,
+                    `https://api.github.com/organizations/${process.env.GITHUB_OWNER}/settings/billing/usage/summary?${query}`,
                     {
                       headers: {
                         Accept: 'application/vnd.github+json',
