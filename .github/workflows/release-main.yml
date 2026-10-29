@@ -17,17 +17,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  choose-runner:
-    uses: ./.github/workflows/select-runner.yml
-    with:
-      hosted_budget_minutes: ${{ vars.ACTIONS_HOSTED_BUDGET_MINUTES }}
-      hosted_reserve_minutes: ${{ vars.ACTIONS_HOSTED_RESERVE_MINUTES }}
-    secrets:
-      ACTIONS_BILLING_TOKEN: ${{ secrets.ACTIONS_BILLING_TOKEN }}
-
   package:
-    needs: choose-runner
-    runs-on: ${{ fromJSON(needs.choose-runner.outputs.runs_on) }}
+    runs-on: ubuntu-latest
     container: ubuntu:24.04
     outputs:
       release_title: ${{ steps.release.outputs.title }}
