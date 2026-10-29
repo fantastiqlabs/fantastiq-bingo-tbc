@@ -19,7 +19,6 @@ concurrency:
 jobs:
   package:
     runs-on: ubuntu-latest
-    container: ubuntu:24.04
     outputs:
       release_title: ${{ steps.release.outputs.title }}
       release_tag: ${{ steps.release.outputs.tag }}
@@ -32,8 +31,8 @@ jobs:
 
       - name: Install Lua validator
         run: |
-          apt-get update
-          apt-get install --yes lua5.4
+          sudo apt-get update
+          sudo apt-get install --yes lua5.4
 
       - name: Validate generic catalog
         run: lua5.4 validate_catalog.lua
