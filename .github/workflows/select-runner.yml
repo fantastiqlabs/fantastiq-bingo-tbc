@@ -1,0 +1,111 @@
+name: Select build runner
+
+on:
+  workflow_call:
+    inputs:
+      hosted_budget_usd:
+        type: string
+        required: false
+        default: '0'
+      hosted_reserve_usd:
+        type: string
+        required: false
+        default: '0.10'
+    secrets:
+      ACTIONS_BILLING_TOKEN:
+        required: false
+    outputs:
+      runs_on:
+        description: JSON value for the build job runs-on field
+        value: ${{ jobs.select.outputs.runs_on }}
+
+jobs:
+  select:
+    # Keep this control job on Unraid so it can route builds at zero hosted minutes.
+    # The workflow that calls this job must use a trusted workflow definition.
+    runs-on: [self-hosted, unraid, build]
+    outputs:
+      runs_on: ${{ steps.route.outputs.runs_on }}
+    steps:
+      - name: Set up Node.js for the billing check
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+      - name: Select runner from billing usage
+        id: route
+        env:
+          ACTIONS_BILLING_TOKEN: ${{ secrets.ACTIONS_BILLING_TOKEN }}
+          HOSTED_BUDGET_USD: ${{ inputs.hosted_budget_usd }}
+          HOSTED_RESERVE_USD: ${{ inputs.hosted_reserve_usd }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const hosted = JSON.stringify('ubuntu-latest');
+          const selfHosted = JSON.stringify(['self-hosted', 'unraid', 'build']);
+          const budget = Number(process.env.HOSTED_BUDGET_USD);
+          const reserve = Number(process.env.HOSTED_RESERVE_USD || '0.10');
+          const isForkPullRequest = process.env.EVENT_NAME === 'pull_request_target'
+            && process.env.PR_HEAD_REPOSITORY !== process.env.GITHUB_REPOSITORY;
+
+          async function main() {
+            let runsOn = hosted;
+            let reason = 'Fork pull requests use an isolated GitHub-hosted runner.';
+
+            if (!isForkPullRequest) {
+              runsOn = selfHosted;
+              reason = 'Using Unraid because the billing check is not configured.';
+
+              if (process.env.ACTIONS_BILLING_TOKEN && Number.isFinite(budget) && budget > 0) {
+                try {
+                  const now = new Date();
+                  const query = new URLSearchParams({
+                    year: String(now.getUTCFullYear()),
+                    month: String(now.getUTCMonth() + 1),
+                    product: 'Actions',
+                  });
+                  const response = await fetch(
+                    `https://api.github.com/users/${process.env.GITHUB_OWNER}/settings/billing/usage/summary?${query}`,
+                    {
+                      headers: {
+                        Accept: 'application/vnd.github+json',
+                        Authorization: `Bearer ${process.env.ACTIONS_BILLING_TOKEN}`,
+                        'X-GitHub-Api-Version': '2026-03-10',
+                      },
+                    },
+                  );
+                  if (!response.ok) throw new Error(`Billing API returned HTTP ${response.status}`);
+
+                  const report = await response.json();
+                  if (!Array.isArray(report.usageItems)) throw new Error('Billing report has no usageItems list');
+                  const used = report.usageItems
+                    .filter((item) => String(item.product).toLowerCase() === 'actions')
+                    .reduce((total, item) => total + Number(item.grossAmount ?? item.netAmount ?? 0), 0);
+                  const remaining = budget - used;
+
+                  if (remaining > reserve) {
+                    runsOn = hosted;
+                    reason = `Using GitHub-hosted runner; estimated included Actions balance is $${remaining.toFixed(2)}.`;
+                  } else {
+                    reason = `Using Unraid; estimated included Actions balance is $${Math.max(0, remaining).toFixed(2)}.`;
+                  }
+                } catch (error) {
+                  reason = `Using Unraid because the billing check failed: ${error.message}`;
+                }
+              }
+            }
+
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `runs_on=${runsOn}\n`);
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `**Build runner:** ${runsOn === hosted ? 'GitHub-hosted' : 'Unraid self-hosted'}\n\n${reason}\n`);
+            console.log(reason);
+          }
+
+          main().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE

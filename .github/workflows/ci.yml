@@ -1,0 +1,38 @@
+name: Validate addon build
+
+on:
+  push:
+    branches: [main]
+  pull_request_target:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  choose-runner:
+    uses: ./.github/workflows/select-runner.yml
+    with:
+      hosted_budget_usd: ${{ vars.ACTIONS_HOSTED_BUDGET_USD }}
+      hosted_reserve_usd: ${{ vars.ACTIONS_HOSTED_RESERVE_USD }}
+    secrets:
+      ACTIONS_BILLING_TOKEN: ${{ secrets.ACTIONS_BILLING_TOKEN }}
+
+  build:
+    needs: choose-runner
+    runs-on: ${{ fromJSON(needs.choose-runner.outputs.runs_on) }}
+    container: ubuntu:24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Install build tools
+        run: |
+          apt-get update
+          apt-get install --yes lua5.4 python3
+      - name: Validate catalog
+        run: lua5.4 validate_catalog.lua
+      - name: Package addon
+        run: python3 scripts/package.py --output dist
