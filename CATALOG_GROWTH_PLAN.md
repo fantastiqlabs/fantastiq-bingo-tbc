@@ -1,4 +1,4 @@
-# Raid Bingo catalog growth plan
+# Fantastiq Bingo TBC catalog growth plan
 
 This plan treats the owner's goal of roughly 500 boxes as a direction. It counts
 distinct prompt wording, not stable catalog IDs. A prompt can be repeated across
@@ -32,7 +32,7 @@ fewer. Subjective moments remain manual.
 
 ## Work queue
 
-The first implementation ticket is [#38](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/38).
+The first implementation ticket is [#38](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/issues/38).
 It removes duplicate wording and strengthens the static catalog validator. Once
 it is merged, the measured distinct baseline should remain 241 unless the audit
 finds a counting defect.
@@ -65,4 +65,4 @@ generic-only deck, 24 selectable cells, free center, and the 50-character text
 limit. Do not claim the 500 target until the final count confirms at least 500
 globally distinct prompt texts.
 
-Live client smoke testing remains tracked separately in [#23](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/issues/23).
+Live client smoke testing remains tracked separately in [#23](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/issues/23).

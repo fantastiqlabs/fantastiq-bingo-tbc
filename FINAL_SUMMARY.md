@@ -1,4 +1,4 @@
-# Raid Bingo Addon candidate status
+# Fantastiq Bingo TBC candidate status
 
 ## Current state
 

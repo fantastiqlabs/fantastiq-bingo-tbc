@@ -1,9 +1,9 @@
-## Raid Bingo Addon
+## Fantastiq Bingo TBC
 ## World of Warcraft: The Burning Crusade Classic Anniversary
 
-## Title: Raid Bingo Addon
+## Title: Fantastiq Bingo TBC
 ## Version: 1.0.0-rc.3
-## Author: HelloThereGuild
+## Author: Fantastiq Labs
 ## Interface: 20506
 ## SavedVariables: RaidBingoDB
 

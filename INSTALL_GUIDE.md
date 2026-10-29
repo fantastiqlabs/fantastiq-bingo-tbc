@@ -1,9 +1,9 @@
-# Raid Bingo Addon Installation Guide
+# Fantastiq Bingo TBC Installation Guide
 
 ## Requirements
 
 - World of Warcraft: The Burning Crusade Classic Anniversary, interface `20506`.
-- A downloadable GitHub test pre-release of Raid Bingo.
+- A downloadable GitHub test pre-release of Fantastiq Bingo TBC.
 - In-game compatibility is not verified yet. Run the smoke checklist after installing.
 
 ## Install

@@ -91,7 +91,7 @@ function addon:OnEnable()
     self:CreateUI()
     self:CreateMinimapButton()
     self:SetAutoMarkEnabled(RaidBingoDB.autoMarkEvents == true)
-    print("|cFF00FF00Raid Bingo Addon loaded. Marks are self-reported and private.|r")
+    print("|cFF00FF00Fantastiq Bingo TBC loaded. Marks are self-reported and private.|r")
 end
 
 -- Generate a no-duplicate card. Raid-specific decks mix a random 2–8 raid
@@ -255,7 +255,7 @@ function addon:CreateUI()
     -- Title text
     local title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge");
     title:SetPoint("TOP", 0, -10);
-    title:SetText("Hello There Raid Bingo!");
+    title:SetText("Fantastiq Bingo TBC");
 
     -- Close button
     local closeButton = CreateFrame("Button", nil, frame, "UIPanelCloseButton");

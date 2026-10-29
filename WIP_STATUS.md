@@ -1,6 +1,6 @@
 # Work in progress
 
-The GitHub Actions release workflow assigns the next `v1.0.0-rc.N` version to each addon-code release and publishes a matching downloadable ZIP. Check [GitHub Releases](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/releases) for the latest candidate. Archive and interface metadata are validated in CI, but the addon has not been verified inside the WoW client.
+The GitHub Actions release workflow assigns the next `v1.0.0-rc.N` version to each addon-code release and publishes a matching downloadable ZIP. Check [GitHub Releases](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/releases) for the latest candidate. Archive and interface metadata are validated in CI, but the addon has not been verified inside the WoW client.
 
 ## Current implementation notes
 

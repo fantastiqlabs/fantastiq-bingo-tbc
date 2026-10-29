@@ -2,7 +2,7 @@
 
 ## Decision
 
-The Raid Bingo addon is a standalone tool. It does not connect to Hello There Guild, share identity, or send card/mark data to a service.
+Fantastiq Bingo TBC is a standalone tool. It does not connect to Guildtastiq, share identity, or send card/mark data to a service.
 
 ## Rationale
 

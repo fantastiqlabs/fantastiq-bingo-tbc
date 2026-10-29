@@ -1,6 +1,6 @@
-# Hello There Raid Bingo!
+# Fantastiq Bingo TBC
 
-A lightweight, standalone bingo card addon for **World of Warcraft: The Burning Crusade Classic Anniversary**. Open a 5×5 card during a raid and mark moments as they happen. It runs entirely in the WoW client and does not connect to the HelloThereGuild portal or any external service.
+A lightweight, standalone bingo card addon for **World of Warcraft: The Burning Crusade Classic Anniversary**. Open a 5×5 card during a raid and mark moments as they happen. It runs entirely in the WoW client and does not connect to Guildtastiq or any external service.
 
 ## What it does
 
@@ -15,7 +15,7 @@ The catalog contains 110 raid-generic squares. Run `lua validate_catalog.lua` fr
 
 ## Install and play
 
-Download the latest [GitHub test release](https://github.com/steffenlongva/hellothereguild-raid-bingo-addon/releases/latest), extract `raid_bingo_addon` into your TBC Anniversary `Interface/AddOns` folder, and enable it in the AddOns list. See the [installation guide](INSTALL_GUIDE.md) for details.
+Download the latest [GitHub test release](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/releases/latest), extract `raid_bingo_addon` into your TBC Anniversary `Interface/AddOns` folder, and enable it in the AddOns list. See the [installation guide](INSTALL_GUIDE.md) for details.
 
 Use `/rb` or `/raidbingo` to show or hide the card. Choose a raid from the in-game selector or use `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, or `/rb generic`. Click squares to mark them. Use `/rb new` for another card and `/rb reset` to clear marks. The **Boxes**, **Text**, and **Window** menus adjust the card independently; their settings are saved. Enable **Automark based on events** to use supported observable events.
 
