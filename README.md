@@ -27,9 +27,11 @@ The latest release is a prerelease candidate. Its archive and interface target h
 
 # WoW Forever compatibility target
 
-The separate `wow_forever/` package is an early compatibility scaffold; the current TBC addon and release remain unchanged. Its interface value `16001` is provisional and must be checked against the installed Forever client before release. The scaffold intentionally does not yet contain the Bingo board UI.
+The separate `wow_forever/` package is an early compatibility scaffold; the current TBC addon and release remain unchanged. Its interface value `16001` is provisional and must be checked against the installed Forever client before release. The scaffold has a data-driven leveling catalog, but does not yet contain the Bingo board UI.
 
-In game, run `/dump GetBuildInfo()` and `/dump select(4, GetBuildInfo())`. Record the returned version, build, and interface in the Forever compatibility notes. Then install `dist/fantastiq_bingo_forever_0.1.0-alpha.1.zip`, reload the UI, run `/fqb`, and confirm the SavedVariables entry `FantastiqBingoForeverDB` persists after a client restart. A package/CI pass alone does not establish live-client compatibility.
+In game, run `/dump GetBuildInfo()` and `/dump select(4, GetBuildInfo())`. Record the returned version, build, and interface in the Forever compatibility notes. Then install the Forever ZIP from `dist/`, reload the UI, run `/fqb`, and confirm the SavedVariables entry `FantastiqBingoForeverDB` persists after a client restart. A package/CI pass alone does not establish live-client compatibility.
+
+The catalog lives in `wow_forever/fantastiq_bingo_forever_catalog.lua`. Entries use stable IDs, category, solo/group modes, a level range, text, optional region/dungeon, and a marking policy. All starter objectives are manual; automatic event marks stay out until verified against the live client. Run `lua5.4 scripts/validate_forever_catalog.lua` to check schema, duplicate IDs/text, and at least 25 eligible squares for solo and group at each level band.
 
 Build and verify packages independently:
 

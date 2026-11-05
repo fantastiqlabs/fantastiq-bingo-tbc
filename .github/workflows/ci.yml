@@ -25,6 +25,8 @@ jobs:
           apt-get install --yes lua5.4 python3
       - name: Validate catalog
         run: lua5.4 validate_catalog.lua
+      - name: Validate WoW Forever catalog
+        run: lua5.4 scripts/validate_forever_catalog.lua
       - name: Package addon
         run: python3 scripts/package.py --output dist
       - name: Verify addon package
