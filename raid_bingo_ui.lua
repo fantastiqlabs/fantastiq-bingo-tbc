@@ -137,6 +137,78 @@ local function InitializeValueDropdown(dropdown, options, labelPrefix, unit, onS
     end)
 end
 
+function addon:OpenCustomDeckDialog(mode)
+    if not self.customDeckDialog then
+        local dialog = CreateFrame("Frame", "RaidBingoCustomDeckDialog", UIParent, "BackdropTemplate")
+        dialog:SetSize(560, 360)
+        dialog:SetPoint("CENTER")
+        dialog:SetFrameStrata("DIALOG")
+        dialog:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border", tile = true, tileSize = 32, edgeSize = 32, insets = { left = 11, right = 11, top = 11, bottom = 11 } })
+        local title = dialog:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+        title:SetPoint("TOP", dialog, "TOP", 0, -18)
+        local scroll = CreateFrame("ScrollFrame", nil, dialog, "UIPanelScrollFrameTemplate")
+        scroll:SetPoint("TOPLEFT", dialog, "TOPLEFT", 28, -48)
+        scroll:SetPoint("BOTTOMRIGHT", dialog, "BOTTOMRIGHT", -42, 58)
+        local edit = CreateFrame("EditBox", nil, scroll, "InputBoxTemplate")
+        edit:SetMultiLine(true)
+        edit:SetAutoFocus(false)
+        edit:SetMaxLetters(8192)
+        edit:SetPoint("TOPLEFT", scroll, "TOPLEFT", 6, -6)
+        edit:SetWidth(475)
+        edit:SetHeight(1400)
+        edit:SetJustifyH("LEFT")
+        edit:SetJustifyV("TOP")
+        edit:SetScript("OnEscapePressed", function() dialog:Hide() end)
+        scroll:SetScrollChild(edit)
+        dialog.title, dialog.edit = title, edit
+        dialog.action = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
+        dialog.action:SetSize(120, 26)
+        dialog.action:SetPoint("BOTTOM", dialog, "BOTTOM", -68, 18)
+        dialog.cancel = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
+        dialog.cancel:SetSize(100, 26)
+        dialog.cancel:SetPoint("LEFT", dialog.action, "RIGHT", 12, 0)
+        dialog.cancel:SetText("Close")
+        dialog.cancel:SetScript("OnClick", function() dialog:Hide() end)
+        self.customDeckDialog = dialog
+    end
+
+    local dialog = self.customDeckDialog
+    dialog.mode = mode
+    dialog.title:SetText(mode == "export" and "Export custom deck JSON" or "Import custom deck JSON")
+    dialog.action:SetText(mode == "export" and "Select all" or "Import deck")
+    dialog.action:SetScript("OnClick", function()
+        if dialog.mode == "export" then dialog.edit:SetFocus(); dialog.edit:HighlightText(); return end
+        local ok, result = addon:ImportCustomDeck(dialog.edit:GetText())
+        if not ok then print("Fantastiq Bingo: " .. tostring(result)); return end
+        addon:SelectDeck(result)
+        addon:RefreshDeckSelector()
+        print("Fantastiq Bingo: imported " .. addon:GetCustomDeck(result).name .. ".")
+        dialog:Hide()
+    end)
+
+    if mode == "export" then
+        local deck = self:GetCustomDeck(self:GetCurrentDeck())
+        if not deck then print("Select a custom deck to export."); return end
+        local encoded, message = self.CustomDeckCodec.Encode({ format = "fantastiq-bingo-deck", version = 1, name = deck.name, prompts = deck.prompts })
+        if not encoded then print("Fantastiq Bingo: " .. tostring(message)); return end
+        dialog.edit:SetText(encoded)
+        dialog.edit:HighlightText()
+    else
+        dialog.edit:SetText("")
+    end
+    dialog:Show()
+    dialog.edit:SetFocus()
+end
+
+function addon:RefreshDeckSelector()
+    if not self.deckSelector then return end
+    local selected = self:GetCurrentDeck()
+    UIDropDownMenu_Initialize(self.deckSelector, self.deckSelector.initialize)
+    UIDropDownMenu_SetSelectedValue(self.deckSelector, selected)
+    local custom = self:GetCustomDeck(selected)
+    UIDropDownMenu_SetText(self.deckSelector, custom and custom.name or selected)
+end
+
 -- Create and manage the main UI frame
 function addon:CreateUI()
     -- Create the main frame
@@ -183,7 +255,14 @@ function addon:CreateUI()
     for _, option in ipairs(addon:GetAutoDeckOptions()) do
         table.insert(deckOptions, option)
     end
-    UIDropDownMenu_Initialize(deckSelector, function(dropdown, level)
+    local baseDeckOptionCount = #deckOptions
+    self.deckSelector = deckSelector
+    self.deckSelector.initialize = function(dropdown, level)
+        for _, custom in ipairs(RaidBingoDB and RaidBingoDB.customDecks or {}) do
+            if type(custom) == "table" and type(custom.id) == "string" and type(custom.name) == "string" then
+                deckOptions[#deckOptions + 1] = { label = custom.name, value = custom.id }
+            end
+        end
         for _, option in ipairs(deckOptions) do
             local deckValue, deckLabel = option.value, option.label
             local info = UIDropDownMenu_CreateInfo()
@@ -202,18 +281,26 @@ function addon:CreateUI()
             info.func = function()
                 if addon:SelectDeck(deckValue) then
                     UIDropDownMenu_SetSelectedValue(deckSelector, deckValue)
-                    UIDropDownMenu_SetText(deckSelector, deckLabel)
+                    UIDropDownMenu_SetText(deckSelector, addon:GetCustomDeck(deckValue) and addon:GetCustomDeck(deckValue).name or deckLabel)
                 end
             end
             UIDropDownMenu_AddButton(info, level)
         end
-    end)
+        for index = #deckOptions, baseDeckOptionCount + 1, -1 do deckOptions[index] = nil end
+    end
+    UIDropDownMenu_Initialize(deckSelector, self.deckSelector.initialize)
     local selectedDeck = self:GetCurrentDeck()
-    for _, option in ipairs(deckOptions) do
-        if option.value == selectedDeck then
-            UIDropDownMenu_SetSelectedValue(deckSelector, option.value)
-            UIDropDownMenu_SetText(deckSelector, option.label)
-            break
+    local selectedCustom = self:GetCustomDeck(selectedDeck)
+    if selectedCustom then
+        UIDropDownMenu_SetSelectedValue(deckSelector, selectedDeck)
+        UIDropDownMenu_SetText(deckSelector, selectedCustom.name)
+    else
+        for _, option in ipairs(deckOptions) do
+            if option.value == selectedDeck then
+                UIDropDownMenu_SetSelectedValue(deckSelector, option.value)
+                UIDropDownMenu_SetText(deckSelector, option.label)
+                break
+            end
         end
     end
 
@@ -257,6 +344,30 @@ function addon:CreateUI()
         addon:SetAutoMarkEnabled(button:GetChecked())
     end)
     self.autoMarkCheckbox = autoMark
+
+    local importButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    importButton:SetSize(110, 24)
+    importButton:SetPoint("BOTTOM", frame, "BOTTOM", -125, 44)
+    importButton:SetText("Import JSON")
+    importButton:SetScript("OnClick", function() addon:OpenCustomDeckDialog("import") end)
+    local exportButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    exportButton:SetSize(110, 24)
+    exportButton:SetPoint("BOTTOM", frame, "BOTTOM", 0, 44)
+    exportButton:SetText("Export JSON")
+    exportButton:SetScript("OnClick", function() addon:OpenCustomDeckDialog("export") end)
+    local removeButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    removeButton:SetSize(110, 24)
+    removeButton:SetPoint("BOTTOM", frame, "BOTTOM", 125, 44)
+    removeButton:SetText("Remove custom")
+    removeButton:SetScript("OnClick", function()
+        local selected = addon:GetCurrentDeck()
+        if not addon:GetCustomDeck(selected) then print("Select a custom deck to remove."); return end
+        local deck = addon:GetCustomDeck(selected)
+        if addon:RemoveCustomDeck(selected) then
+            addon:RefreshDeckSelector()
+            print("Fantastiq Bingo: removed " .. deck.name .. ".")
+        end
+    end)
 
     -- Create the grid of buttons (5x5)
     self.gridButtons = {}

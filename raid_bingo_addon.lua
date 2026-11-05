@@ -73,9 +73,10 @@ end
 function addon:OnEnable()
     RaidBingoDB = RaidBingoDB or {}
     RaidBingoDB.playerMarks = RaidBingoDB.playerMarks or {}
+    RaidBingoDB.customDecks = type(RaidBingoDB.customDecks) == "table" and RaidBingoDB.customDecks or {}
     playerMarks = RaidBingoDB.playerMarks
 
-    if RaidBingoCatalog and RaidBingoCatalog[RaidBingoDB.selectedDeck] then
+    if RaidBingoCatalog and RaidBingoCatalog[RaidBingoDB.selectedDeck] or self:GetCustomDeck(RaidBingoDB.selectedDeck) then
         currentDeck = RaidBingoDB.selectedDeck
     elseif AUTO_DECK_RAIDS[RaidBingoDB.selectedDeck] then
         local count, available = self:GetAutoDeckStatus(RaidBingoDB.selectedDeck)
@@ -97,6 +98,21 @@ end
 -- Generate a no-duplicate card. Raid-specific decks mix a random 2–8 raid
 -- squares with generic moments; the dedicated generic deck stays raid-neutral.
 function addon:GenerateCardFromCatalog(deckName)
+    if type(deckName) == "string" and deckName:match("^custom_%d+$") then
+        local custom = self:GetCustomDeck(deckName)
+        if not custom then return nil end
+        local pool = {}
+        for index, text in ipairs(custom.prompts) do pool[index] = { id = deckName .. "_" .. index, text = text } end
+        self:ShuffleTable(pool)
+        local freeSpaces = self:GenerateFreeSpacePositions()
+        local card = { squares = {}, freeSpaces = freeSpaces, gridSize = 5, centerSquareIndex = 13 }
+        local nextSquare = 1
+        for index = 1, 25 do
+            if freeSpaces[index] then card.squares[index] = "Free Space"
+            else card.squares[index] = pool[nextSquare]; nextSquare = nextSquare + 1 end
+        end
+        return card
+    end
     local autoRaid = AUTO_DECK_RAIDS[deckName]
     local catalogDeckName = autoRaid or deckName
     local deck = RaidBingoCatalog and RaidBingoCatalog[catalogDeckName]
@@ -329,6 +345,45 @@ function addon:GetAutoDeckStatus(deckName)
     return count, count >= AUTO_DECK_MINIMUM, AUTO_DECK_MINIMUM
 end
 
+function addon:GetCustomDeck(deckId)
+    if type(deckId) ~= "string" or not deckId:match("^custom_%d+$") or not RaidBingoDB or type(RaidBingoDB.customDecks) ~= "table" then return nil end
+    for _, deck in ipairs(RaidBingoDB.customDecks) do
+        if type(deck) == "table" and deck.id == deckId then
+            local valid = self.CustomDeckCodec and self.CustomDeckCodec.Validate({ format = deck.format, version = deck.version, name = deck.name, prompts = deck.prompts })
+            if valid then return deck end
+        end
+    end
+end
+
+function addon:ImportCustomDeck(source)
+    if not self.CustomDeckCodec then return false, "Deck import is unavailable." end
+    local deck, message = self.CustomDeckCodec.Decode(source)
+    if not deck then return false, message end
+    local stored = RaidBingoDB.customDecks
+    if #stored >= self.CustomDeckCodec.MaxDecks() then return false, "You can save up to 20 custom decks." end
+    local highest = 0
+    for _, existing in ipairs(stored) do
+        local id = type(existing) == "table" and existing.id
+        local number = type(id) == "string" and tonumber(id:match("^custom_(%d+)$"))
+        if number and number > highest then highest = number end
+    end
+    deck.id = "custom_" .. (highest + 1)
+    stored[#stored + 1] = deck
+    return true, deck.id
+end
+
+function addon:RemoveCustomDeck(deckId)
+    local stored = RaidBingoDB and RaidBingoDB.customDecks or {}
+    for index, deck in ipairs(stored) do
+        if type(deck) == "table" and deck.id == deckId then
+            table.remove(stored, index)
+            if currentDeck == deckId then self:SelectDeck("raid_generic") end
+            return true
+        end
+    end
+    return false
+end
+
 function addon:SelectDeck(deckName)
     local autoRaid = AUTO_DECK_RAIDS[deckName]
     if autoRaid then
@@ -337,7 +392,7 @@ function addon:SelectDeck(deckName)
             print(string.format("%s Auto is unavailable: %d of %d verified event squares.", deckName, count, AUTO_DECK_MINIMUM))
             return false
         end
-    elseif not RaidBingoCatalog or not RaidBingoCatalog[deckName] then
+    elseif not (RaidBingoCatalog and RaidBingoCatalog[deckName]) and not self:GetCustomDeck(deckName) then
         return false
     end
     currentDeck = deckName
@@ -568,7 +623,8 @@ function addon:AutoMarkMatchingSquares(matcher)
     local marks = self:GetPlayerMarks()
     local changed = false
     for index, square in ipairs(squares) do
-        if not self:IsFreeSpace(index) and not marks[index] and matcher(square) then
+        local customPrompt = type(square) == "table" and type(square.id) == "string" and square.id:match("^custom_%d+_")
+        if not customPrompt and not self:IsFreeSpace(index) and not marks[index] and matcher(square) then
             marks[index] = true
             changed = true
         end
@@ -593,6 +649,7 @@ function addon:OnChatEvent(message)
     if not RaidBingoDB or not RaidBingoDB.autoMarkEvents or not (UnitInRaid and UnitInRaid("player")) then return end
     if type(message) ~= "string" then return end
     self:AutoMarkMatchingSquares(function(square)
+        if type(square) == "table" and type(square.id) == "string" and square.id:match("^custom_%d+_") then return false end
         if type(square) ~= "table" or type(square.text) ~= "string" then return false end
         local quotedPhrase = square.text:match("['\"]([^'\"]+)['\"]")
         return quotedPhrase ~= nil and ContainsEventPhrase(message, quotedPhrase)
