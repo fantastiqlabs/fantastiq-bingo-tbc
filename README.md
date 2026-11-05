@@ -17,13 +17,23 @@ The catalog contains 208 raid-generic squares. Run `lua validate_catalog.lua` fr
 
 ## Install and play
 
-Download the latest [GitHub test release](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/releases/latest), extract `raid_bingo_addon` into your TBC Anniversary `Interface/AddOns` folder, and enable it in the AddOns list. See the [installation guide](INSTALL_GUIDE.md) for details.
+Download the latest [GitHub release](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/releases/latest), extract `raid_bingo_addon` into your TBC Anniversary `Interface/AddOns` folder, and enable it in the AddOns list. See the [installation guide](INSTALL_GUIDE.md) for details.
 
 Use `/rb` or `/raidbingo` to show or hide the card. Choose a raid from the in-game selector or use `/rb bt`, `/rb hyjal`, `/rb ssc`, `/rb tk`, `/rb za`, or `/rb generic`. Click squares to mark them. Use `/rb new` for another card and `/rb reset` to clear marks. The **Boxes**, **Text**, and **Window** menus adjust the card independently; their settings are saved. Enable **Automark based on events** to use supported observable events.
 
 ## Test status
 
-The latest release is a prerelease candidate. Its archive and interface target have been checked, but the addon has not yet been verified in the WoW client. Please run the [smoke-test checklist](SMOKE_TEST_CHECKLIST.md) and report any errors before relying on automarking during a raid. See [WIP_STATUS.md](WIP_STATUS.md) for the current implementation notes.
+Stable v1.0.0 is published from the RC10 source that passed the TBC Anniversary client smoke test (interface 20506). Later changes remain outside that stable artifact; test any newer prerelease with the [smoke-test checklist](SMOKE_TEST_CHECKLIST.md) before relying on it during a raid. See [WIP_STATUS.md](WIP_STATUS.md) for current implementation notes.
+
+## Releasing
+
+Every pull request and merge to `main` runs validation and builds both the TBC
+and WoW Forever archives. Publishing a TBC prerelease is separate: an authorized
+release owner must dispatch **Build and publish addon release** from `main` and
+check `publish_release`. Dispatches from other branches, or without that
+explicit checkbox, do not publish a tag, GitHub Release, or Discord notice. The
+Forever archive remains a distinct build and release target; see issue #106 for
+its required client validation before publication.
 
 # WoW Forever compatibility target
 

@@ -31,6 +31,8 @@ jobs:
         run: lua5.4 scripts/validate_forever_catalog.lua
       - name: Test WoW Forever board generation and persistence
         run: lua5.4 scripts/test_forever_boards.lua
+      - name: Test release publication policy
+        run: python3 scripts/test_release_policy.py
       - name: Package addon
         run: python3 scripts/package.py --output dist
       - name: Verify addon package
