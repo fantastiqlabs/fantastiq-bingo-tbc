@@ -1,4 +1,4 @@
-"""Shared installable archive contract for the Raid Bingo packaging tools."""
+"""Installable archive contracts for supported Raid Bingo clients."""
 
 import re
 
@@ -16,13 +16,30 @@ _INTERFACE_FIELD = re.compile(r"^## Interface:\s*(\S+)\s*$", re.MULTILINE)
 _VERSION_FIELD = re.compile(r"^## Version:\s*(\S+)\s*$", re.MULTILINE)
 _SAFE_VERSION = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+-]*")
 
+TARGETS = {
+    "tbc": {
+        "source_directory": ".",
+        "addon_directory": ADDON_DIRECTORY,
+        "toc": "raid_bingo_addon.toc",
+        "interface": EXPECTED_INTERFACE,
+        "files": REQUIRED_FILES,
+    },
+    "forever": {
+        "source_directory": "wow_forever",
+        "addon_directory": "fantastiq_bingo_forever",
+        "toc": "fantastiq_bingo_forever.toc",
+        "interface": "16001",
+        "files": ("fantastiq_bingo_forever.toc", "fantastiq_bingo_forever.lua"),
+    },
+}
 
-def parse_toc_metadata(contents):
+
+def parse_toc_metadata(contents, expected_interface=EXPECTED_INTERFACE):
     """Return the verified interface and version declared by TOC text."""
     interfaces = _INTERFACE_FIELD.findall(contents)
     versions = _VERSION_FIELD.findall(contents)
-    if interfaces != [EXPECTED_INTERFACE]:
-        raise ValueError(f"Expected exactly one interface version {EXPECTED_INTERFACE}; found {interfaces}")
+    if interfaces != [expected_interface]:
+        raise ValueError(f"Expected exactly one interface version {expected_interface}; found {interfaces}")
     if len(versions) != 1:
         raise ValueError(f"Expected exactly one TOC version; found {versions}")
     version = versions[0]

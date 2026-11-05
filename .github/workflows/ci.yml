@@ -27,3 +27,9 @@ jobs:
         run: lua5.4 validate_catalog.lua
       - name: Package addon
         run: python3 scripts/package.py --output dist
+      - name: Verify addon package
+        run: python3 scripts/verify.py "$(find dist -maxdepth 1 -name 'raid_bingo_addon_*.zip' -print -quit)" --target tbc
+      - name: Package WoW Forever compatibility target
+        run: python3 scripts/package.py --target forever --output dist
+      - name: Verify WoW Forever package
+        run: python3 scripts/verify.py "$(find dist -maxdepth 1 -name 'fantastiq_bingo_forever_*.zip' -print -quit)" --target forever
