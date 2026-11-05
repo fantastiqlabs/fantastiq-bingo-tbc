@@ -50,6 +50,22 @@ for _, cell in ipairs(group.cells) do
     end
 end
 
+local themed = assert(addon.GenerateBoard("group", 31, 40, 4242, "dungeon"))
+assert(themed.family == "dungeon" and themed.id ~= group.id, "family selection must affect board identity")
+local dungeonSquares = 0
+for _, cell in ipairs(themed.cells) do
+    if cell.category == "dungeon" or cell.category == "quest" or cell.category == "social" then
+        dungeonSquares = dungeonSquares + 1
+    end
+end
+assert(dungeonSquares >= 12, "dungeon family should include a substantial number of themed squares")
+local repeatThemed = assert(addon.GenerateBoard("group", 31, 40, 4242, "dungeon"))
+for index = 1, 25 do
+    assert(themed.cells[index].objectiveId == repeatThemed.cells[index].objectiveId, "family seed should reproduce order")
+end
+assert(not addon.GenerateBoard("solo", 31, 40, 7, "dungeon"), "dungeon family should require group mode")
+assert(not addon.GenerateBoard("group", 1, 10, 7, "dungeon"), "unavailable family should return a helpful error")
+
 assert(addon.InitializeSavedVariables())
 local ok = addon.SaveBoard(first)
 assert(ok, "board should save")
@@ -63,9 +79,21 @@ assert(addon.UnmarkSquare(reopened, 1), "manual mark should be removable")
 local reopenedAgain = assert(addon.LoadBoard(first.id))
 assert(reopenedAgain.cells[1].mark == nil, "unmark should persist")
 
+selectedAgain.family = nil
+_G.FantastiqBingoForeverDB = {
+    schemaVersion = 1,
+    boards = { [selectedAgain.id] = selectedAgain },
+    history = { selectedAgain.id },
+    currentBoardId = selectedAgain.id,
+}
+local migrated = addon.InitializeSavedVariables()
+assert(migrated.schemaVersion == 2, "old schema should migrate to current version")
+local migratedBoard = assert(addon.LoadBoard(selectedAgain.id), "old board should survive migration")
+assert(migratedBoard.family == "all" and migratedBoard.cells[1].mark.source == "manual", "migration should retain family and marks")
+
 _G.FantastiqBingoForeverDB = { schemaVersion = 1, boards = "corrupt", history = {} }
 local recovered = addon.InitializeSavedVariables()
-assert(recovered.schemaVersion == 1 and type(recovered.boards) == "table", "malformed state should recover to a usable database")
+assert(recovered.schemaVersion == 2 and type(recovered.boards) == "table", "malformed state should recover to a usable database")
 assert(recovered.recoveryNotice, "recovery should be visible to the player")
 
 print("Forever board tests passed: seeded order, free space, filtering, save/reopen, marks, and malformed-state recovery")

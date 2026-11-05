@@ -65,7 +65,7 @@ Checked 2026-11-05 against the repository main branch:
 - Separate Forever package and unique SavedVariables namespace are merged. The package interface remains provisional until the owner's installed client is checked.
 - A 73-objective manual-first catalog is merged, including solo/group pools, six level bands, and the nine reported Forever dungeon names/level ranges.
 - Seeded 5×5 board generation, a center free square, local per-player marks, board history, and malformed-state recovery are merged. Reopening a mode/range/seed reuses saved marks.
-- Board UI and live-client validation are still open; package CI is not a substitute for loading the addon in Forever.
+- A native 5×5 board UI is merged with solo/group modes, Adventure/Dungeons/Quest + Story/Memories family selection, six level bands, keyboard/mouse marking, local progress, and shareable seeds. Gamepad behavior and visual rendering still need live-client validation; package CI is not a substitute for loading the addon in Forever.
 - Safe automatic marks remain disabled because their events have not been verified in the owner's client.
 
 ## Sources

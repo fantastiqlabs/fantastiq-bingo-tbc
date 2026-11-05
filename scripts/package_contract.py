@@ -34,6 +34,7 @@ TARGETS = {
             "fantastiq_bingo_forever.lua",
             "fantastiq_bingo_forever_catalog.lua",
             "fantastiq_bingo_forever_boards.lua",
+            "fantastiq_bingo_forever_ui.lua",
         ),
     },
 }

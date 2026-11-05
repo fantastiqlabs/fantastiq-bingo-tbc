@@ -12,7 +12,7 @@ frame:SetScript("OnEvent", function(_, event, loadedName)
     addon.InitializeSavedVariables()
 
     local savedCount = #addon.db.history
-    print(("Fantastiq Bingo Forever loaded. Saved boards: %d. Use /fqb solo|group <min> <max> [seed]."):format(savedCount))
+    print(("Fantastiq Bingo Forever loaded. Saved boards: %d. Use /fqb to open the board."):format(savedCount))
 end)
 
 SLASH_FANTASTIQBINGOFOREVER1 = "/fqb"
@@ -27,21 +27,10 @@ SlashCmdList.FANTASTIQBINGOFOREVER = function(message)
         print(("Created %s board for levels %d-%d. Share seed: %d. Squares: 24 + free space."):format(
             board.mode, board.minLevel, board.maxLevel, board.seed
         ))
+        addon.ShowBoardUI(board)
         return
     end
-
-    local current = addon.db and addon.db.currentBoardId and addon.LoadBoard(addon.db.currentBoardId)
-    if current then
-        local marked = 0
-        for _, cell in ipairs(current.cells) do
-            if cell.mark then marked = marked + 1 end
-        end
-        print(("Current %s board, levels %d-%d, seed %d: %d of 25 marked."):format(
-            current.mode, current.minLevel, current.maxLevel, current.seed, marked
-        ))
-    else
-        print("Use /fqb solo|group <minLevel> <maxLevel> [seed] to create a reproducible board.")
-    end
+    addon.ToggleBoardUI()
     local version, build, buildDate, interface = GetBuildInfo()
     print(("Fantastiq Bingo Forever | client %s (%s), interface %s"):format(
         tostring(version), tostring(build), tostring(interface)
