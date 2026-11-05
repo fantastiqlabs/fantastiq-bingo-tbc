@@ -24,3 +24,18 @@ Use `/rb` or `/raidbingo` to show or hide the card. Choose a raid from the in-ga
 ## Test status
 
 The latest release is a prerelease candidate. Its archive and interface target have been checked, but the addon has not yet been verified in the WoW client. Please run the [smoke-test checklist](SMOKE_TEST_CHECKLIST.md) and report any errors before relying on automarking during a raid. See [WIP_STATUS.md](WIP_STATUS.md) for the current implementation notes.
+
+# WoW Forever compatibility target
+
+The separate `wow_forever/` package is an early compatibility scaffold; the current TBC addon and release remain unchanged. Its interface value `16001` is provisional and must be checked against the installed Forever client before release. The scaffold intentionally does not yet contain the Bingo board UI.
+
+In game, run `/dump GetBuildInfo()` and `/dump select(4, GetBuildInfo())`. Record the returned version, build, and interface in the Forever compatibility notes. Then install `dist/fantastiq_bingo_forever_0.1.0-alpha.1.zip`, reload the UI, run `/fqb`, and confirm the SavedVariables entry `FantastiqBingoForeverDB` persists after a client restart. A package/CI pass alone does not establish live-client compatibility.
+
+Build and verify packages independently:
+
+```sh
+python3 scripts/package.py --target tbc --output dist
+python3 scripts/verify.py dist/raid_bingo_addon_<version>.zip --target tbc
+python3 scripts/package.py --target forever --output dist
+python3 scripts/verify.py dist/fantastiq_bingo_forever_<version>.zip --target forever
+```

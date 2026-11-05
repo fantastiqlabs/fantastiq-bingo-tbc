@@ -7,15 +7,26 @@ import sys
 import zipfile
 from pathlib import Path, PurePosixPath
 
-from package_contract import ADDON_DIRECTORY, EXPECTED_INTERFACE, REQUIRED_FILES, parse_toc_metadata
+from package_contract import (
+    ADDON_DIRECTORY,
+    EXPECTED_INTERFACE,
+    REQUIRED_FILES,
+    TARGETS,
+    parse_toc_metadata,
+)
 
 
 class VerificationError(ValueError):
     """The archive does not satisfy the installable addon contract."""
 
 
-def verify_archive(archive_path):
+def verify_archive(archive_path, target="tbc"):
     """Validate the archive without extracting untrusted paths to disk."""
+    if target not in TARGETS:
+        raise VerificationError(f"Unknown package target: {target}")
+    contract = TARGETS[target]
+    addon_directory = contract["addon_directory"]
+    files = contract["files"]
     archive_path = Path(archive_path)
     if not archive_path.is_file():
         raise VerificationError(f"Archive not found: {archive_path}")
@@ -26,7 +37,7 @@ def verify_archive(archive_path):
             if len(names) != len(set(names)):
                 raise VerificationError("Duplicate archive paths are not allowed")
 
-            expected_names = {f"{ADDON_DIRECTORY}/{name}" for name in REQUIRED_FILES}
+            expected_names = {f"{addon_directory}/{name}" for name in files}
             for info in infos:
                 name = info.filename
                 if not name or "\\" in name or "\x00" in name:
@@ -34,7 +45,7 @@ def verify_archive(archive_path):
                 path = PurePosixPath(name)
                 if path.is_absolute() or any(part in {"", ".", ".."} for part in name.split("/")):
                     raise VerificationError(f"Unsafe archive path: {name!r}")
-                if len(path.parts) != 2 or path.parts[0] != ADDON_DIRECTORY:
+                if len(path.parts) != 2 or path.parts[0] != addon_directory:
                     raise VerificationError(f"Unexpected addon path: {name!r}")
                 if info.is_dir():
                     raise VerificationError(f"Unexpected directory entry: {name!r}")
@@ -53,16 +64,16 @@ def verify_archive(archive_path):
             if bad_member is not None:
                 raise VerificationError(f"CRC check failed for {bad_member}")
 
-            toc_name = f"{ADDON_DIRECTORY}/raid_bingo_addon.toc"
+            toc_name = f"{addon_directory}/{contract['toc']}"
             try:
                 toc_text = archive.read(toc_name).decode("utf-8")
             except (UnicodeDecodeError, KeyError) as error:
                 raise VerificationError("TOC is missing or is not valid UTF-8") from error
             try:
-                _, version = parse_toc_metadata(toc_text)
+                _, version = parse_toc_metadata(toc_text, contract["interface"])
             except ValueError as error:
                 raise VerificationError(str(error)) from error
-            expected_filename = f"{ADDON_DIRECTORY}_{version}.zip"
+            expected_filename = f"{addon_directory}_{version}.zip"
             if archive_path.name != expected_filename:
                 raise VerificationError(
                     f"Expected archive filename {expected_filename!r}, found {archive_path.name!r}"
@@ -75,14 +86,16 @@ def verify_archive(archive_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("archive_path", help="Path to the ZIP archive to verify")
+    parser.add_argument("--target", choices=TARGETS, default="tbc", help="Client package (default: tbc)")
     parser.add_argument("--strict", action="store_true", help="Accepted for compatibility; CRC is always checked")
     args = parser.parse_args()
     try:
-        version = verify_archive(args.archive_path)
+        version = verify_archive(args.archive_path, args.target)
     except (OSError, VerificationError) as error:
         print(f"Verification failed: {error}", file=sys.stderr)
         return 1
-    print(f"Verification successful: version {version}, interface {EXPECTED_INTERFACE}, exact file set, safe paths, CRC valid.")
+    interface = TARGETS[args.target]["interface"]
+    print(f"Verification successful: version {version}, interface {interface}, exact file set, safe paths, CRC valid.")
     return 0
 
 
