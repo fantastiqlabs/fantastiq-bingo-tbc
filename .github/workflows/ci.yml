@@ -23,6 +23,8 @@ jobs:
         run: |
           apt-get update
           apt-get install --yes lua5.4 python3
+      - name: Validate Lua syntax
+        run: for source in wow_forever/*.lua; do luac5.4 -p "$source"; done
       - name: Validate catalog
         run: lua5.4 validate_catalog.lua
       - name: Validate WoW Forever catalog

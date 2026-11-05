@@ -3,8 +3,14 @@ local addonName, addon = ...
 local BOARD_SIZE = 25
 local FREE_SPACE_INDEX = 13
 local HISTORY_LIMIT = 20
-local SCHEMA_VERSION = 1
+local SCHEMA_VERSION = 2
 local RANDOM_MODULUS = 2147483647
+local FAMILY_CATEGORIES = {
+    all = false,
+    dungeon = { dungeon = true },
+    quest_story = { quest = true, exploration = true, moment = true },
+    moments = { leveling = true, exploration = true, moment = true },
+}
 
 local function copyCell(cell)
     local copy = {
@@ -26,6 +32,7 @@ local function copyBoard(board)
     local copy = {
         id = board.id,
         mode = board.mode,
+        family = board.family or "all",
         minLevel = board.minLevel,
         maxLevel = board.maxLevel,
         seed = board.seed,
@@ -50,6 +57,7 @@ end
 local function isSavedBoard(board)
     if type(board) ~= "table" or type(board.id) ~= "string" or board.id == "" then return false end
     if board.mode ~= "solo" and board.mode ~= "group" then return false end
+    if board.family ~= nil and FAMILY_CATEGORIES[board.family] == nil then return false end
     if type(board.minLevel) ~= "number" or type(board.maxLevel) ~= "number"
         or board.minLevel % 1 ~= 0 or board.maxLevel % 1 ~= 0
         or board.minLevel < 1 or board.maxLevel > 60 or board.minLevel > board.maxLevel then return false end
@@ -80,10 +88,11 @@ function addon.InitializeSavedVariables()
     local raw = _G.FantastiqBingoForeverDB
     local db = freshDatabase()
     local recovered = false
-    if type(raw) == "table" and raw.schemaVersion == SCHEMA_VERSION
+    if type(raw) == "table" and (raw.schemaVersion == SCHEMA_VERSION or raw.schemaVersion == 1)
         and type(raw.boards) == "table" and type(raw.history) == "table" then
         for id, board in pairs(raw.boards) do
             if type(id) == "string" and isSavedBoard(board) and board.id == id then
+                board.family = board.family or "all"
                 db.boards[id] = copyBoard(board)
             else
                 recovered = true
@@ -130,8 +139,11 @@ local function hasMode(item, mode)
     return false
 end
 
-function addon.GenerateBoard(mode, minLevel, maxLevel, seed)
+function addon.GenerateBoard(mode, minLevel, maxLevel, seed, family)
     if mode ~= "solo" and mode ~= "group" then return nil, "mode must be solo or group" end
+    family = family or "all"
+    if FAMILY_CATEGORIES[family] == nil then return nil, "unknown board family" end
+    if family == "dungeon" and mode ~= "group" then return nil, "dungeon boards require group mode" end
     if type(minLevel) ~= "number" or type(maxLevel) ~= "number"
         or minLevel % 1 ~= 0 or maxLevel % 1 ~= 0
         or minLevel < 1 or maxLevel > 60 or minLevel > maxLevel then
@@ -157,12 +169,48 @@ function addon.GenerateBoard(mode, minLevel, maxLevel, seed)
         eligible[index], eligible[other] = eligible[other], eligible[index]
     end
 
+    local categories = FAMILY_CATEGORIES[family]
+    local preferred, other = {}, {}
+    if categories then
+        for _, item in ipairs(eligible) do
+            local pool = categories[item.category] and preferred or other
+            pool[#pool + 1] = item
+        end
+        if #preferred == 0 then
+            return nil, "no " .. family:gsub("_", " ") .. " objectives are available for this level band"
+        end
+    else
+        other = eligible
+    end
+
+    local selected = {}
+    local preferredCount = math.min(12, #preferred)
+    for index = 1, preferredCount do selected[#selected + 1] = preferred[index] end
+    for index = 1, #other do
+        if #selected >= BOARD_SIZE - 1 then break end
+        selected[#selected + 1] = other[index]
+    end
+    if #selected < BOARD_SIZE - 1 then
+        for index = preferredCount + 1, #preferred do
+            if #selected >= BOARD_SIZE - 1 then break end
+            selected[#selected + 1] = preferred[index]
+        end
+    end
+    for index = #selected, 2, -1 do
+        state = nextRandom(state)
+        local otherIndex = (state % index) + 1
+        selected[index], selected[otherIndex] = selected[otherIndex], selected[index]
+    end
+
     local board = {
         mode = mode,
+        family = family,
         minLevel = minLevel,
         maxLevel = maxLevel,
         seed = normalizedSeed,
-        id = string.format("%s_%d_%d_%d", mode, minLevel, maxLevel, normalizedSeed),
+        id = family == "all"
+            and string.format("%s_%d_%d_%d", mode, minLevel, maxLevel, normalizedSeed)
+            or string.format("%s_%s_%d_%d_%d", mode, family, minLevel, maxLevel, normalizedSeed),
         createdAt = type(time) == "function" and time() or 0,
         cells = {},
     }
@@ -170,7 +218,7 @@ function addon.GenerateBoard(mode, minLevel, maxLevel, seed)
         if index == FREE_SPACE_INDEX then
             board.cells[index] = { free = true, text = "Free Space", mark = { source = "free" } }
         else
-            local item = table.remove(eligible, 1)
+            local item = table.remove(selected, 1)
             board.cells[index] = {
                 objectiveId = item.id,
                 category = item.category,
@@ -209,8 +257,8 @@ function addon.LoadBoard(id)
     return copyBoard(board)
 end
 
-function addon.OpenBoard(mode, minLevel, maxLevel, seed)
-    local board, err = addon.GenerateBoard(mode, minLevel, maxLevel, seed)
+function addon.OpenBoard(mode, minLevel, maxLevel, seed, family)
+    local board, err = addon.GenerateBoard(mode, minLevel, maxLevel, seed, family)
     if not board then return nil, err end
     local existing = addon.LoadBoard(board.id)
     if existing then return existing end
