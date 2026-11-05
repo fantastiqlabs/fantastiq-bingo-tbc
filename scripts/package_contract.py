@@ -29,7 +29,11 @@ TARGETS = {
         "addon_directory": "fantastiq_bingo_forever",
         "toc": "fantastiq_bingo_forever.toc",
         "interface": "16001",
-        "files": ("fantastiq_bingo_forever.toc", "fantastiq_bingo_forever.lua"),
+        "files": (
+            "fantastiq_bingo_forever.toc",
+            "fantastiq_bingo_forever.lua",
+            "fantastiq_bingo_forever_catalog.lua",
+        ),
     },
 }
 

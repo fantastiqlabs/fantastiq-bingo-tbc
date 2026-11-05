@@ -1,8 +1,9 @@
 ## Interface: 16001
 ## Title: Fantastiq Bingo Forever
 ## Notes: Leveling Bingo for WoW Forever
-## Version: 0.1.0-alpha.1
+## Version: 0.1.0-alpha.2
 ## Author: Fantastiq Labs
 ## SavedVariables: FantastiqBingoForeverDB
 
 fantastiq_bingo_forever.lua
+fantastiq_bingo_forever_catalog.lua
