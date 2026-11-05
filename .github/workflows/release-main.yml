@@ -1,13 +1,13 @@
 name: Build and publish addon release
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'raid_bingo_*.lua'
-      - 'raid_bingo_addon.toc'
-      - 'scripts/package.py'
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish the next TBC prerelease from main
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: write
@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
   package:
+    if: github.ref == 'refs/heads/main' && inputs.publish_release
     runs-on: ubuntu-latest
     outputs:
       release_title: ${{ steps.release.outputs.title }}

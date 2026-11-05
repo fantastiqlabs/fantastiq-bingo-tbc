@@ -33,6 +33,8 @@ jobs:
         run: lua5.4 scripts/test_forever_boards.lua
       - name: Test safe custom deck JSON import and export
         run: lua5.4 scripts/test_custom_decks.lua
+      - name: Test release publication policy
+        run: python3 scripts/test_release_policy.py
       - name: Package addon
         run: python3 scripts/package.py --output dist
       - name: Verify addon package
