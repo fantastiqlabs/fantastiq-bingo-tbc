@@ -58,6 +58,16 @@ Store catalog entries as data with stable IDs and fields for category, board mod
 - Confirm whether user-to-user board sharing is intended to be local same-seed play or true synchronized progress. Keep synchronized progress out of the first release unless the live client's addon communication rules and APIs are confirmed.
 - Decide later whether the repository should be renamed. A separate package target is the lower-risk first step because the existing TBC addon and release are still active.
 
+## Implementation status
+
+Checked 2026-11-05 against the repository main branch:
+
+- Separate Forever package and unique SavedVariables namespace are merged. The package interface remains provisional until the owner's installed client is checked.
+- A 73-objective manual-first catalog is merged, including solo/group pools, six level bands, and the nine reported Forever dungeon names/level ranges.
+- Seeded 5×5 board generation, a center free square, local per-player marks, board history, and malformed-state recovery are merged. Reopening a mode/range/seed reuses saved marks.
+- Board UI and live-client validation are still open; package CI is not a substitute for loading the addon in Forever.
+- Safe automatic marks remain disabled because their events have not been verified in the owner's client.
+
 ## Sources
 
 - Blizzard Entertainment, [WoW Forever goes live globally November 4](https://worldofwarcraft.blizzard.com/en-us/news/24315820/world-of-warcraft-forever-goes-live-globally-4-november), published 2026-11-03.
