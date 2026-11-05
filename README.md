@@ -2,6 +2,8 @@
 
 A lightweight, standalone bingo card addon for **World of Warcraft: The Burning Crusade Classic Anniversary**. Open a 5×5 card during a raid and mark moments as they happen. It runs entirely in the WoW client and does not connect to Guildtastiq or any external service.
 
+The current release targets TBC Anniversary. Planning for a separate WoW Forever leveling Bingo target is tracked in [issue #100](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/issues/100) and the [WoW Forever API and content plan](docs/research/wow-forever-addon-api-and-leveling-plan.md). Keep the client package and release target separate until the Forever build has been verified in game.
+
 ## What it does
 
 - Deals randomized cards from Raid Generic and mixed Black Temple, Mount Hyjal, Serpentshrine Cavern, Tempest Keep, and Zul'Aman decks. Separate Auto decks use only squares matched by supported combat-log or chat rules; underfilled Auto decks are disabled until their catalog has enough verified events.
