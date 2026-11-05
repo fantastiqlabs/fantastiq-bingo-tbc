@@ -13,7 +13,7 @@ The current release targets TBC Anniversary. Planning for a separate WoW Forever
 
 ## Catalog checks
 
-The catalog contains 110 raid-generic squares. Run `lua validate_catalog.lua` from the addon folder to check generic IDs, duplicate text, the 100-square minimum, the 50-character limit, and named raid or boss references.
+The catalog contains 208 raid-generic squares. Run `lua validate_catalog.lua` from the addon folder to check generic IDs, duplicate text, the 100-square minimum, the 50-character limit, and named raid or boss references.
 
 ## Install and play
 
