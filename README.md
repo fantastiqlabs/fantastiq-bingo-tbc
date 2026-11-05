@@ -31,7 +31,9 @@ The separate `wow_forever/` package is an early compatibility scaffold; the curr
 
 In game, run `/dump GetBuildInfo()` and `/dump select(4, GetBuildInfo())`. Record the returned version, build, and interface in the Forever compatibility notes. Then install the Forever ZIP from `dist/`, reload the UI, run `/fqb`, and confirm the SavedVariables entry `FantastiqBingoForeverDB` persists after a client restart. A package/CI pass alone does not establish live-client compatibility.
 
-The catalog lives in `wow_forever/fantastiq_bingo_forever_catalog.lua`. Entries use stable IDs, category, solo/group modes, a level range, text, optional region/dungeon, and a marking policy. All starter objectives are manual; automatic event marks stay out until verified against the live client. Run `lua5.4 scripts/validate_forever_catalog.lua` to check schema, duplicate IDs/text, and at least 25 eligible squares for solo and group at each level band.
+The catalog lives in `wow_forever/fantastiq_bingo_forever_catalog.lua`. Board generation and local persistence live in `wow_forever/fantastiq_bingo_forever_boards.lua`. Entries use stable IDs, category, solo/group modes, a level range, text, optional region/dungeon, and a marking policy. All starter objectives are manual; automatic event marks stay out until verified against the live client. Run `lua5.4 scripts/validate_forever_catalog.lua` to check schema, duplicate IDs/text, and at least 25 eligible squares for solo and group at each level band. Run `lua5.4 scripts/test_forever_boards.lua` to check deterministic seeds, free space, mode/range filtering, persistence, manual marking, and recovery from malformed data.
+
+The compatibility scaffold can create/reopen a saved board from the game chat with `/fqb solo 11 20 4242` or `/fqb group 31 40 4242`. Use the same mode, level range, and seed to get the same squares; marks remain in the local `FantastiqBingoForeverDB`. The full board UI is tracked separately.
 
 Build and verify packages independently:
 
