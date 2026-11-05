@@ -24,13 +24,15 @@ jobs:
           apt-get update
           apt-get install --yes lua5.4 python3
       - name: Validate Lua syntax
-        run: for source in wow_forever/*.lua; do luac5.4 -p "$source"; done
+        run: for source in *.lua wow_forever/*.lua scripts/*.lua; do luac5.4 -p "$source"; done
       - name: Validate catalog
         run: lua5.4 validate_catalog.lua
       - name: Validate WoW Forever catalog
         run: lua5.4 scripts/validate_forever_catalog.lua
       - name: Test WoW Forever board generation and persistence
         run: lua5.4 scripts/test_forever_boards.lua
+      - name: Test safe custom deck JSON import and export
+        run: lua5.4 scripts/test_custom_decks.lua
       - name: Test release publication policy
         run: python3 scripts/test_release_policy.py
       - name: Package addon

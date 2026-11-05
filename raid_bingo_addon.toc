@@ -7,6 +7,7 @@
 ## Interface: 20506
 ## SavedVariables: RaidBingoDB
 
+raid_bingo_custom_decks.lua
 raid_bingo_addon.lua
 raid_bingo_card.lua
 raid_bingo_ui.lua

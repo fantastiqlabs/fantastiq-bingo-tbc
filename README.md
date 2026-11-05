@@ -15,6 +15,22 @@ The current release targets TBC Anniversary. Planning for a separate WoW Forever
 
 The catalog contains 208 raid-generic squares. Run `lua validate_catalog.lua` from the addon folder to check generic IDs, duplicate text, the 100-square minimum, the 50-character limit, and named raid or boss references.
 
+## Custom decks
+
+Use **Import JSON** to paste a text-only deck or **Export JSON** while a custom
+deck is selected. Custom decks are saved locally in the WoW SavedVariables file;
+they are not sent to a server. The format accepts only a name and 24–100 unique
+prompts (each at most 50 UTF-8 bytes). Imported fields beyond `format`, `version`,
+`name`, and `prompts` are rejected. Imported prompts remain plain text and never
+define automatic event rules. **Remove custom** deletes only the selected custom
+deck; shipped decks and their trigger rules are unchanged.
+
+```json
+{"format":"fantastiq-bingo-deck","version":1,"name":"Friends night","prompts":["Someone gets lost","A player says hello"]}
+```
+
+The example is abbreviated; a usable deck needs at least 24 unique prompts.
+
 ## Install and play
 
 Download the latest [GitHub release](https://github.com/fantastiqlabs/fantastiq-bingo-tbc/releases/latest), extract `raid_bingo_addon` into your TBC Anniversary `Interface/AddOns` folder, and enable it in the AddOns list. See the [installation guide](INSTALL_GUIDE.md) for details.

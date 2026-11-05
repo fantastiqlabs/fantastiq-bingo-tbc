@@ -11,6 +11,7 @@ REQUIRED_FILES = (
     "raid_bingo_ui.lua",
     "raid_bingo_utils.lua",
     "raid_bingo_catalog.lua",
+    "raid_bingo_custom_decks.lua",
 )
 _INTERFACE_FIELD = re.compile(r"^## Interface:\s*(\S+)\s*$", re.MULTILINE)
 _VERSION_FIELD = re.compile(r"^## Version:\s*(\S+)\s*$", re.MULTILINE)
