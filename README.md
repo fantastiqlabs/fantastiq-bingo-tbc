@@ -1,4 +1,8 @@
-<p align="center">\n  <img src="https://raw.githubusercontent.com/fantastiqlabs/.github/main/profile/assets/fantastiq-labs-mark.svg" alt="Fantastiq Labs" width="520">\n</p>\n\n# Fantastiq Bingo TBC
+<p align="center">
+  <img src="https://raw.githubusercontent.com/fantastiqlabs/.github/main/profile/assets/fantastiq-labs-mark.svg" alt="Fantastiq Labs" width="520">
+</p>
+
+# Fantastiq Bingo TBC
 
 A lightweight, standalone bingo card addon for **World of Warcraft: The Burning Crusade Classic Anniversary**. Open a 5×5 card during a raid and mark moments as they happen. It runs entirely in the WoW client and does not connect to Guildtastiq or any external service.
 
